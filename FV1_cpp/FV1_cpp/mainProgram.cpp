@@ -15,20 +15,20 @@ real simulationTime = 2.5;
 real g = (real)9.80665;
 real manning = 0.0;
 
-int hl = 6;
-int hr = 2;
+real hl = 6;
+real hr = 2;
 
 real ql = 0;
 real qr = 0;
 
-int reflectUp = 1;
-int reflectDown = 1;
+real reflectUp = 1;
+real reflectDown = 1;
 
-int hImposedUp = 0;
-int qxImposedUp = 0;
+real hImposedUp = 0;
+real qxImposedUp = 0;
 
-int hImposedDown = 0;
-int qxImposedDown = 0;
+real hImposedDown = 0;
+real qxImposedDown = 0;
 
 real timeNow = 0;
 
@@ -47,6 +47,9 @@ void modalProjection(real* u_int, real* u);
 void qAddGhostBoundaryConditions(real* q, real* qWithBC);
 void hAddGhostBoundaryConditions(real* h, real* hWithBC);
 void zAddGhostBoundaryConditions(real* z, real* zWithBC);
+void qLocalFaceValue(int i, real* qTemp, real* q);
+void hLocalFaceValue(int i, real* hTemp, real* h);
+void etaLocalFaceValue(int i, real* hTemp, real* z, real* eta);
 
 int main()
 {
@@ -182,6 +185,8 @@ int main()
 	delete[] zTemp;
 
 	delete[] dry;
+
+	return 0;
 }
 
 // Helper function definitions //
@@ -239,8 +244,8 @@ void qInitialDamBreak(real* x_int, real* q_int)
 
 void hInitialDamBreak(real* z_int, real* x_int, real* h_int)
 {
-	int etaLeft = hl;
-	int etaRight = hr;
+	real etaLeft = hl;
+	real etaRight = hr;
 
 	int i;
 
@@ -345,3 +350,17 @@ void zAddGhostBoundaryConditions(real* z, real* zWithBC)
 	}
 }
 
+void qLocalFaceValue(int i, real* qTemp, real* q)
+{
+	q[i] = qTemp[i];
+}
+
+void hLocalFaceValue(int i, real* hTemp, real* h)
+{
+	h[i] = hTemp[i];
+}
+
+void etaLocalFaceValue(int i, real* hTemp, real* z, real* eta)
+{
+	eta[i] = hTemp[i] + z[i];
+}
