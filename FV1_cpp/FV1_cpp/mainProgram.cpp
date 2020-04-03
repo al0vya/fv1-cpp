@@ -24,7 +24,7 @@ real qr = 0;
 real reflectUp = 1;
 real reflectDown = 1;
 
-real hImposedUp = 0;
+real hImposedUp = 4;
 real qxImposedUp = 0;
 
 real hImposedDown = 0;
@@ -50,6 +50,12 @@ void zAddGhostBoundaryConditions(real* z, real* zWithBC);
 void qLocalFaceValue(int i, real* qTemp, real* q);
 void hLocalFaceValue(int i, real* hTemp, real* h);
 void etaLocalFaceValue(int i, real* hTemp, real* z, real* eta);
+void hWestFaceValue(real hWestUpwind, real* hTemp, real* hWest);
+void qWestFaceValue(real qWestUpwind, real* qTemp, real* qWest);
+void etaWestFaceValue(real hWestUpwind, real* hTemp, real* etaTemp, real* etaWest);
+void hEastFaceValue(real hEastDownwind, real* hTemp, real* hEast);
+void qEastFaceValue(real qEastDownwind, real* qTemp, real* qEast);
+void etaEastFaceValue(real hEastDownwind, real* hTemp, real* etaTemp, real* etaEast);
 
 int main()
 {
@@ -71,12 +77,12 @@ int main()
 	real* h = new real[cells];
 	real* z = new real[cells];
 
-	// allocate buffers for the corresponding interfacial values
+	// allocate buffers for the corresponding interface values
 	real* q_int = new real[cells + 1];
 	real* h_int = new real[cells + 1];
 	real* z_int = new real[cells + 1];
 
-	// initialise the interfacial values
+	// initialise the interface values
 	bedDataDamBreak(z_int);
 	qInitialDamBreak(x_int, q_int);
 	hInitialDamBreak(z_int, x_int, h_int);
@@ -96,6 +102,13 @@ int main()
 	hAddGhostBoundaryConditions(h, hWithBC);
 	zAddGhostBoundaryConditions(z, zWithBC);
 
+	// extract upwind and downwind modes for use in fv1Operator
+	real hWestUpwind = hWithBC[0];
+	real qWestUpwind = qWithBC[0];
+	
+	real hEastDownwind = hWithBC[cells + 1];
+	real qEastDownwind = qWithBC[cells + 1];
+	
 	// allocate buffers for RK2 step
 	real* qWithBCNew = new real[cells + 2];
 	real* hWithBCNew = new real[cells + 2];
@@ -153,13 +166,40 @@ int main()
 		}
 	}
 
+	real* etaTemp = new real[cells + 2];
+
+	for (i = 0; i < cells + 1; i++)
+	{
+		etaTemp[i] = hTemp[i] + zTemp[i];
+	}
+
+	// allocating buffers for eastern and western interface values
+	real* qEast = new real[cells + 1];
+	real* hEast = new real[cells + 1];
+	real* etaEast = new real[cells + 1];
+
+	real* qWest = new real[cells + 1];
+	real* hWest = new real[cells + 1];
+	real* etaWest = new real[cells + 1];
+
+	// initialising interface values
+	qEastFaceValue(qEastDownwind, qTemp, qEast);
+	hEastFaceValue(hEastDownwind, hTemp, hEast);
+	etaEastFaceValue(hEastDownwind, hTemp, etaTemp, etaEast);
+
+	qWestFaceValue(qWestUpwind, qTemp, qWest);
+	hWestFaceValue(hWestUpwind, hTemp, hWest);
+	etaWestFaceValue(hWestUpwind, hTemp, etaTemp, etaWest);
+
 	int j = 0;
 
 	// test they've been initialised
-	for (i = 0; i < cells+2; i++) {
+	for (i = 0; i < cells+1; i++) {
 		j++;
-		printf("%f, %s\n", hTemp[i], dry[i] ? "true" : "false");
+		printf("%f, %f, %f\n", qWest[i], hWest[i], etaWest[i]);
 	}
+
+	printf("%f", hWestUpwind);
 
 	// delete buffers
 	delete[] x;
@@ -185,6 +225,16 @@ int main()
 	delete[] zTemp;
 
 	delete[] dry;
+
+	delete[] etaTemp;
+
+	delete[] qEast;
+	delete[] hEast;
+	delete[] etaEast;
+
+	delete[] qWest;
+	delete[] hWest;
+	delete[] etaWest;
 
 	return 0;
 }
@@ -309,12 +359,12 @@ void hAddGhostBoundaryConditions(real* h, real* hWithBC)
 
 	if (hImposedUp > 0)
 	{
-		hUp = hImposedDown;
+		hUp = hImposedUp;
 	}
 
 	real hDown = h[cells - 1];
 
-	if (qxImposedDown > 0)
+	if (hImposedDown > 0)
 	{
 		hDown = hImposedDown;
 	}
@@ -363,4 +413,82 @@ void hLocalFaceValue(int i, real* hTemp, real* h)
 void etaLocalFaceValue(int i, real* hTemp, real* z, real* eta)
 {
 	eta[i] = hTemp[i] + z[i];
+}
+
+void hWestFaceValue(real hWestUpwind, real* hTemp, real* hWest)
+{
+	hWest[0] = hWestUpwind;
+
+	int i;
+
+	// start from 1 on hTemp to avoid ghost cell
+	for (i = 1; i < cells + 1; i++)
+	{
+		hWest[i] = hTemp[i];
+	}
+}
+
+void qWestFaceValue(real qWestUpwind, real* qTemp, real* qWest)
+{
+	qWest[0] = qWestUpwind;
+
+	int i;
+
+	// start from 1 on qTemp to avoid ghost cell
+	for (i = 1; i < cells + 1; i++)
+	{
+		qWest[i] = qTemp[i];
+	}
+}
+
+void etaWestFaceValue(real hWestUpwind, real* hTemp, real* etaTemp, real* etaWest)
+{
+	// indexing shifted by one, since uTemp[0] is the ghost mode
+	etaWest[0] = etaTemp[1] - hTemp[1] + hWestUpwind;
+
+	int i;
+
+	// similarly shifted, start from 1 on temp to avoid ghost cell
+	for (i = 1; i < cells + 1; i++)
+	{
+		etaWest[i] = etaTemp[i];
+	}
+}
+
+void hEastFaceValue(real hEastDownwind, real* hTemp, real* hEast)
+{
+	int i;
+
+	// [i+1] on hTemp to skip ghost cell
+	for (i = 0; i < cells; i++)
+	{
+		hEast[i] = hTemp[i + 1];
+	}
+
+	hEast[cells] = hEastDownwind;
+}
+
+void qEastFaceValue(real qEastDownwind, real* qTemp, real* qEast)
+{
+	int i;
+
+	// [i+1] on qTemp to skip ghost cell
+	for (i = 0; i < cells; i++)
+	{
+		qEast[i] = qTemp[i + 1];
+	}
+
+	qEast[cells] = qEastDownwind;
+}
+
+void etaEastFaceValue(real hEastDownwind, real* hTemp, real* etaTemp, real* etaEast)
+{
+	int i;
+
+	for (i = 0; i < cells; i++)
+	{
+		etaEast[i] = etaTemp[i + 1];
+	}
+
+	etaEast[cells] = etaTemp[cells] - hTemp[cells] + hEastDownwind;
 }
