@@ -6,7 +6,7 @@ using namespace std;
 typedef double real;
 
 // Defining simulation parameters //
-int cells = 20;
+int cells = 10;
 real xmin = 0;
 real xmax = 50;
 
@@ -36,7 +36,7 @@ real CFL = 0.33f;
 
 real tolDry = 1e-3f;
 
-real dt = 1e-4f;
+real dt = 1e-4;
 
 // declaring helper functions
 void baselineMesh(real dx, real* x, real* x_int);
@@ -48,9 +48,6 @@ void modalProjectionFirstOrder(real* u_int, real* u);
 void qAddGhostBoundaryConditions(real* q, real* qWithBC);
 void hAddGhostBoundaryConditions(real* h, real* hWithBC);
 void zAddGhostBoundaryConditions(real* z, real* zWithBC);
-void qLocalFaceValues(int i, real* qTemp, real* q);
-void hLocalFaceValues(int i, real* hTemp, real* h);
-void etaLocalFaceValues(int i, real* hTemp, real* z, real* eta);
 void hWestFaceValues(real hWestUpwind, real* hTemp, real* hWest);
 void qWestFaceValues(real qWestUpwind, real* qTemp, real* qWest);
 void etaWestFaceValues(real hWestUpwind, real* hTemp, real* etaTemp, real* etaWest);
@@ -66,11 +63,16 @@ void hStarValues(real* etaFaceValue, real* zStarIntermediate, real* hStar);
 void qStarValues(real* uFaceValue, real* hStar, real* qStar);
 void zStarValues(real* deltaWest, real* deltaEast, real* zStarIntermediate, real* zStar);
 void fluxHLL(real* hWestStar, real* hEastStar, real* qWestStar, real* qEastStar, real* uWest, real* uEast, real* massFlux, real* momentumFlux);
+void hBarValues(real* hWestStar, real* hEastStar, real* hBar);
+void massFV1OperatorValues(real dx, real* massFlux, real* massFV1Operator);
+void momentumFV1OperatorValues(real dx, real* hBar, real* zBar, real* momentumFlux, real* momentumFV1Operator);
 
 int main()
 {
 	// quintessential for-loop index
 	int i;
+	real u;
+	real dtCFL;
 
 	// coarsest cell size
 	real dx = (xmax - xmin) / (real)cells;
@@ -107,18 +109,6 @@ int main()
 	real* hWithBC = new real[cells + 2];
 	real* zWithBC = new real[cells + 2];
 
-	// initialise modes with BCs
-	qAddGhostBoundaryConditions(q, qWithBC);
-	hAddGhostBoundaryConditions(h, hWithBC);
-	zAddGhostBoundaryConditions(z, zWithBC);
-
-	// extract upwind and downwind modes for use in fv1Operator
-	real hWestUpwind = hWithBC[0];
-	real qWestUpwind = qWithBC[0];
-	
-	real hEastDownwind = hWithBC[cells + 1];
-	real qEastDownwind = qWithBC[cells + 1];
-	
 	// allocate buffers for RK2 step
 	real* qWithBCNew = new real[cells + 2];
 	real* hWithBCNew = new real[cells + 2];
@@ -130,58 +120,13 @@ int main()
 	// placeholder variables for substitution
 	real a, b, c;
 
-	// initialise RK2 buffers
-	for (i = 0; i < cells + 2; i++)
-	{
-		a = qWithBC[i];
-		b = hWithBC[i];
-		c = zWithBC[i];
-
-		qWithBCNew[i] = a;
-		hWithBCNew[i] = b;
-
-		qTemp[i] = a;
-		hTemp[i] = b;
-		zTemp[i] = c;
-	}
-
 	// allocate true/false buffer for dry cells
 	bool* dry = new bool[cells + 2];
 
-	// ghost cells are always 0 i.e. false
-	dry[0] = false;
-	dry[cells + 1] = false;
-
 	// placeholder variables for checking
 	real hLocal, hBackward, hForward, hMax;
-	
-	// initialising dry vs wet cells, ignore ghost cells
-	for (i = 1; i < cells + 1; i++)
-	{
-		hLocal = hTemp[i];
-		hBackward = hTemp[i - 1];
-		hForward = hTemp[i + 1];
-
-		hMax = max(hLocal, hBackward);
-		hMax = max(hForward, hMax);
-		
-		// dry[] hasn't been initialised so else statement also needed
-		if (hMax <= tolDry)
-		{
-			dry[i] = true;
-		}
-		else
-		{
-			dry[i] = false;
-		}
-	}
 
 	real* etaTemp = new real[cells + 2];
-
-	for (i = 0; i < cells + 1; i++)
-	{
-		etaTemp[i] = hTemp[i] + zTemp[i];
-	}
 
 	// allocating buffers for eastern and western interface Valuess
 	real* qEast = new real[cells + 1];
@@ -192,23 +137,14 @@ int main()
 	real* hWest = new real[cells + 1];
 	real* etaWest = new real[cells + 1];
 
-	// initialising interface Valuess
-	qEastFaceValues(qEastDownwind, qTemp, qEast);
-	hEastFaceValues(hEastDownwind, hTemp, hEast);
-	etaEastFaceValues(hEastDownwind, hTemp, etaTemp, etaEast);
-
-	qWestFaceValues(qWestUpwind, qTemp, qWest);
-	hWestFaceValues(hWestUpwind, hTemp, hWest);
-	etaWestFaceValues(hWestUpwind, hTemp, etaTemp, etaWest);
-
 	// allocating buffers for positivity preserving nodes
-	real* qWestStar = new real[cells + 1];
-	real* hWestStar = new real[cells + 1];
-
 	real* qEastStar = new real[cells + 1];
 	real* hEastStar = new real[cells + 1];
 
-	real* zIntermediateStar = new real[cells + 1];
+	real* qWestStar = new real[cells + 1];
+	real* hWestStar = new real[cells + 1];
+
+	real* zStarIntermediate = new real[cells + 1];
 	real* zStar = new real[cells + 1];
 
 	real* uWest = new real[cells + 1];
@@ -226,17 +162,157 @@ int main()
 	real* zBar = new real[cells];
 
 	// allocating buffer for fv1Operator values
-	real* fv1Operator = new real[cells];
+	real* massFV1Operator = new real[cells];
+	real* momentumFV1Operator = new real[cells];
 
-	int j = 0;
+	// WHILE LOOP STARTS FROM HERE //
 
-	// test they've been initialised
-	for (i = 0; i < cells+1; i++) {
-		j++;
-		printf("%f, %f, %f\n", qWest[i], hWest[i], etaWest[i]);
+	while (timeNow < simulationTime)
+	{
+		if (timeNow - simulationTime > 0)
+		{
+			timeNow -= dt;
+			dt = simulationTime - timeNow;
+			timeNow += dt;
+		}
+
+		// initialise modes with BCs
+		qAddGhostBoundaryConditions(q, qWithBC);
+		hAddGhostBoundaryConditions(h, hWithBC);
+		zAddGhostBoundaryConditions(z, zWithBC);
+
+		// extract upwind and downwind modes for use in fv1Operator
+		real hWestUpwind = hWithBC[0];
+		real qWestUpwind = qWithBC[0];
+
+		real hEastDownwind = hWithBC[cells + 1];
+		real qEastDownwind = qWithBC[cells + 1];
+
+		// initialise RK2 buffers
+		for (i = 0; i < cells + 2; i++)
+		{
+			a = qWithBC[i];
+			b = hWithBC[i];
+			c = zWithBC[i];
+
+			qWithBCNew[i] = a;
+			hWithBCNew[i] = b;
+
+			qTemp[i] = a;
+			hTemp[i] = b;
+			zTemp[i] = c;
+		}
+
+		// ghost cells are always 0 i.e. false/wet
+		dry[0] = false;
+		dry[cells + 1] = false;
+
+		// initialising dry vs wet cells, ignore ghost cells
+		for (i = 1; i < cells + 1; i++)
+		{
+			hLocal = hTemp[i];
+			hBackward = hTemp[i - 1];
+			hForward = hTemp[i + 1];
+
+			hMax = max(hLocal, hBackward);
+			hMax = max(hForward, hMax);
+
+			// dry[] hasn't been initialised so else statement also needed
+			if (hMax <= tolDry)
+			{
+				dry[i] = true;
+			}
+			else
+			{
+				dry[i] = false;
+			}
+		}
+
+		for (i = 0; i < cells + 1; i++)
+		{
+			etaTemp[i] = hTemp[i] + zTemp[i];
+		}
+
+		// initialising interface Valuess
+		qEastFaceValues(qEastDownwind, qTemp, qEast);
+		hEastFaceValues(hEastDownwind, hTemp, hEast);
+		etaEastFaceValues(hEastDownwind, hTemp, etaTemp, etaEast);
+
+		qWestFaceValues(qWestUpwind, qTemp, qWest);
+		hWestFaceValues(hWestUpwind, hTemp, hWest);
+		etaWestFaceValues(hWestUpwind, hTemp, etaTemp, etaWest);
+
+		// initialising velocity interface values
+		uWestFaceValues(qWest, hWest, uWest);
+		uEastFaceValues(qEast, hEast, uEast);
+
+		zStarIntermediateValues(etaWest, etaEast, hWest, hEast, zStarIntermediate);
+
+		deltaWestValues(etaWest, zStarIntermediate, deltaWest);
+		deltaEastValues(etaEast, zStarIntermediate, deltaEast);
+
+		// initialising positivity preserving nodes
+		hStarValues(etaWest, zStarIntermediate, hWestStar);
+		hStarValues(etaEast, zStarIntermediate, hEastStar);
+
+		qStarValues(uWest, hWestStar, qWestStar);
+		qStarValues(uEast, hEastStar, qEastStar);
+
+		zStarValues(deltaWest, deltaEast, zStarIntermediate, zStar);
+
+		// initialising numerical fluxes
+		fluxHLL(hWestStar, hEastStar, qWestStar, qEastStar, uWest, uEast, massFlux, momentumFlux);
+
+		hBarValues(hWestStar, hEastStar, hBar);
+
+		modalProjectionFirstOrder(zStar, zBar);
+
+		massFV1OperatorValues(dx, massFlux, massFV1Operator);
+		momentumFV1OperatorValues(dx, hBar, zBar, momentumFlux, momentumFV1Operator);
+
+		// FV1 operator increment, skip ghosts cells
+		for (i = 1; i < cells + 1; i++)
+		{
+			// skip increment in dry cells
+			if (dry[i])
+			{
+				hWithBCNew[i] = hWithBC[i];
+				qWithBCNew[i] = qWithBC[i];
+			}
+			else
+			{
+				hWithBCNew[i] = hWithBC[i] + dt * massFV1Operator[i - 1];
+				qWithBCNew[i] = qWithBC[i] + dt * momentumFV1Operator[i - 1];
+			}
+
+			if (hWithBCNew[i] <= tolDry)
+			{
+				qWithBCNew[i] = 0;
+			}
+		}
+
+		// update and CFL time step adjustment
+		dt = 1e9;
+
+		for (i = 0; i < cells; i++)
+		{
+			h[i] = hWithBCNew[i + 1];
+			q[i] = qWithBCNew[i + 1];
+
+			if (h[i] <= tolDry)
+			{
+				continue;
+			}
+			else
+			{
+				u = q[i] / h[i];
+				dtCFL = CFL * dx / (abs(u) + sqrt(g * h[i]));
+				dt = min(dt, dtCFL);
+			}
+		}
+
+		printf("Updated time step, h value: %f, q value %f.\n", h[0], q[0]);
 	}
-
-	printf("%f", hWestUpwind);
 
 	// delete buffers
 	delete[] x;
@@ -279,7 +355,7 @@ int main()
 	delete[] qEastStar;
 	delete[] hEastStar;
 
-	delete[] zIntermediateStar;
+	delete[] zStarIntermediate;
 	delete[] zStar;
 
 	delete[] uWest;
@@ -294,7 +370,8 @@ int main()
 	delete[] hBar;
 	delete[] zBar;
 
-	delete[] fv1Operator;
+	delete[] massFV1Operator;
+	delete[] momentumFV1Operator;
 
 	return 0;
 }
@@ -717,5 +794,34 @@ void fluxHLL(real* hWestStar, real* hEastStar, real* qWestStar, real* qEastStar,
 			massFlux[i] = massFR;
 			momentumFlux[i] = momentumFR;
 		}
+	}
+}
+
+void hBarValues(real* hWestStar, real* hEastStar, real* hBar)
+{
+	// essentially 0th order projection but taking into account east/west locality
+	for (int i = 0; i < cells; i++)
+	{
+		hBar[i] = (hEastStar[i] + hWestStar[i + 1]) / 2;
+	}
+}
+
+void massFV1OperatorValues(real dx, real* massFlux, real* massFV1Operator)
+{
+	real a = -(1 / dx);
+
+	for (int i = 0; i < cells; i++)
+	{
+		massFV1Operator[i] = a * (massFlux[i + 1] - massFlux[i]);
+	}
+}
+
+void momentumFV1OperatorValues(real dx, real* hBar, real* zBar, real* momentumFlux, real* momentumFV1Operator)
+{
+	real a = -(1 / dx);
+
+	for (int i = 0; i < cells; i++)
+	{
+		momentumFV1Operator[i] = a * (momentumFlux[i + 1] - momentumFlux[i]) + 2 * sqrt(3) * g * hBar[i] * zBar[i];
 	}
 }
