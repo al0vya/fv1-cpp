@@ -24,7 +24,7 @@ real qr = 0;
 real reflectUp = 1;
 real reflectDown = 1;
 
-real hImposedUp = 4;
+real hImposedUp = 0;
 real qxImposedUp = 0;
 
 real hImposedDown = 0;
@@ -43,19 +43,29 @@ void baselineMesh(real dx, real* x, real* x_int);
 void bedDataDamBreak(real* z_int);
 void qInitialDamBreak(real* x_int, real* q_int);
 void hInitialDamBreak(real* z_int, real* x_int, real* h_int);
-void modalProjection(real* u_int, real* u);
+void modalProjectionZeroOrder(real* u_int, real* u);
+void modalProjectionFirstOrder(real* u_int, real* u);
 void qAddGhostBoundaryConditions(real* q, real* qWithBC);
 void hAddGhostBoundaryConditions(real* h, real* hWithBC);
 void zAddGhostBoundaryConditions(real* z, real* zWithBC);
-void qLocalFaceValue(int i, real* qTemp, real* q);
-void hLocalFaceValue(int i, real* hTemp, real* h);
-void etaLocalFaceValue(int i, real* hTemp, real* z, real* eta);
-void hWestFaceValue(real hWestUpwind, real* hTemp, real* hWest);
-void qWestFaceValue(real qWestUpwind, real* qTemp, real* qWest);
-void etaWestFaceValue(real hWestUpwind, real* hTemp, real* etaTemp, real* etaWest);
-void hEastFaceValue(real hEastDownwind, real* hTemp, real* hEast);
-void qEastFaceValue(real qEastDownwind, real* qTemp, real* qEast);
-void etaEastFaceValue(real hEastDownwind, real* hTemp, real* etaTemp, real* etaEast);
+void qLocalFaceValues(int i, real* qTemp, real* q);
+void hLocalFaceValues(int i, real* hTemp, real* h);
+void etaLocalFaceValues(int i, real* hTemp, real* z, real* eta);
+void hWestFaceValues(real hWestUpwind, real* hTemp, real* hWest);
+void qWestFaceValues(real qWestUpwind, real* qTemp, real* qWest);
+void etaWestFaceValues(real hWestUpwind, real* hTemp, real* etaTemp, real* etaWest);
+void hEastFaceValues(real hEastDownwind, real* hTemp, real* hEast);
+void qEastFaceValues(real qEastDownwind, real* qTemp, real* qEast);
+void etaEastFaceValues(real hEastDownwind, real* hTemp, real* etaTemp, real* etaEast);
+void uWestFaceValues(real* qWest, real* hWest, real* uWest);
+void uEastFaceValues(real* qEast, real* hEast, real* uEast);
+void zStarIntermediateValues(real* etaWest, real* etaEast, real* hWest, real* hEast, real* zStarIntermediate);
+void deltaWestValues(real* etaWest, real* zStarIntermediate, real* deltaWest);
+void deltaEastValues(real* etaEast, real* zStarIntermediate, real* deltaEast);
+void hStarValues(real* etaFaceValue, real* zStarIntermediate, real* hStar);
+void qStarValues(real* uFaceValue, real* hStar, real* qStar);
+void zStarValues(real* deltaWest, real* deltaEast, real* zStarIntermediate, real* zStar);
+void fluxHLL(real* hWestStar, real* hEastStar, real* qWestStar, real* qEastStar, real* uWest, real* uEast, real* massFlux, real* momentumFlux);
 
 int main()
 {
@@ -77,20 +87,20 @@ int main()
 	real* h = new real[cells];
 	real* z = new real[cells];
 
-	// allocate buffers for the corresponding interface values
+	// allocate buffers for the corresponding interface Valuess
 	real* q_int = new real[cells + 1];
 	real* h_int = new real[cells + 1];
 	real* z_int = new real[cells + 1];
 
-	// initialise the interface values
+	// initialise the interface Valuess
 	bedDataDamBreak(z_int);
 	qInitialDamBreak(x_int, q_int);
 	hInitialDamBreak(z_int, x_int, h_int);
 
 	// project to find the modes
-	modalProjection(q_int, q);
-	modalProjection(h_int, h);
-	modalProjection(z_int, z);
+	modalProjectionZeroOrder(q_int, q);
+	modalProjectionZeroOrder(h_int, h);
+	modalProjectionZeroOrder(z_int, z);
 
 	// allocate buffers for modes with BCs
 	real* qWithBC = new real[cells + 2];
@@ -173,7 +183,7 @@ int main()
 		etaTemp[i] = hTemp[i] + zTemp[i];
 	}
 
-	// allocating buffers for eastern and western interface values
+	// allocating buffers for eastern and western interface Valuess
 	real* qEast = new real[cells + 1];
 	real* hEast = new real[cells + 1];
 	real* etaEast = new real[cells + 1];
@@ -182,14 +192,41 @@ int main()
 	real* hWest = new real[cells + 1];
 	real* etaWest = new real[cells + 1];
 
-	// initialising interface values
-	qEastFaceValue(qEastDownwind, qTemp, qEast);
-	hEastFaceValue(hEastDownwind, hTemp, hEast);
-	etaEastFaceValue(hEastDownwind, hTemp, etaTemp, etaEast);
+	// initialising interface Valuess
+	qEastFaceValues(qEastDownwind, qTemp, qEast);
+	hEastFaceValues(hEastDownwind, hTemp, hEast);
+	etaEastFaceValues(hEastDownwind, hTemp, etaTemp, etaEast);
 
-	qWestFaceValue(qWestUpwind, qTemp, qWest);
-	hWestFaceValue(hWestUpwind, hTemp, hWest);
-	etaWestFaceValue(hWestUpwind, hTemp, etaTemp, etaWest);
+	qWestFaceValues(qWestUpwind, qTemp, qWest);
+	hWestFaceValues(hWestUpwind, hTemp, hWest);
+	etaWestFaceValues(hWestUpwind, hTemp, etaTemp, etaWest);
+
+	// allocating buffers for positivity preserving nodes
+	real* qWestStar = new real[cells + 1];
+	real* hWestStar = new real[cells + 1];
+
+	real* qEastStar = new real[cells + 1];
+	real* hEastStar = new real[cells + 1];
+
+	real* zIntermediateStar = new real[cells + 1];
+	real* zStar = new real[cells + 1];
+
+	real* uWest = new real[cells + 1];
+	real* uEast = new real[cells + 1];
+
+	real* deltaWest = new real[cells + 1];
+	real* deltaEast = new real[cells + 1];
+
+	// allocating buffers for numerical fluxes with HLL solver
+	real* massFlux = new real[cells + 1];
+	real* momentumFlux = new real[cells + 1];
+
+	// allocating buffers for positivity preserving MODES
+	real* hBar = new real[cells];
+	real* zBar = new real[cells];
+
+	// allocating buffer for fv1Operator values
+	real* fv1Operator = new real[cells];
 
 	int j = 0;
 
@@ -235,6 +272,29 @@ int main()
 	delete[] qWest;
 	delete[] hWest;
 	delete[] etaWest;
+
+	delete[] qWestStar;
+	delete[] hWestStar;
+
+	delete[] qEastStar;
+	delete[] hEastStar;
+
+	delete[] zIntermediateStar;
+	delete[] zStar;
+
+	delete[] uWest;
+	delete[] uEast;
+
+	delete[] deltaWest;
+	delete[] deltaEast;
+
+	delete[] massFlux;
+	delete[] momentumFlux;
+
+	delete[] hBar;
+	delete[] zBar;
+
+	delete[] fv1Operator;
 
 	return 0;
 }
@@ -313,7 +373,7 @@ void hInitialDamBreak(real* z_int, real* x_int, real* h_int)
 	}
 }
 
-void modalProjection(real* u_int, real* u)
+void modalProjectionZeroOrder(real* u_int, real* u)
 {
 	int i;
 
@@ -321,6 +381,14 @@ void modalProjection(real* u_int, real* u)
 	for (i = 0; i < cells; i++)
 	{
 		u[i] = (u_int[i] + u_int[i + 1]) / 2;
+	}
+}
+
+void modalProjectionFirstOrder(real* u_int, real* u)
+{
+	for (int i = 0; i < cells; i++)
+	{
+		u[i] = (u_int[i + 1] - u_int[i]) / 2 * sqrt(3);
 	}
 }
 
@@ -400,22 +468,22 @@ void zAddGhostBoundaryConditions(real* z, real* zWithBC)
 	}
 }
 
-void qLocalFaceValue(int i, real* qTemp, real* q)
+void qLocalFaceValues(int i, real* qTemp, real* q)
 {
 	q[i] = qTemp[i];
 }
 
-void hLocalFaceValue(int i, real* hTemp, real* h)
+void hLocalFaceValues(int i, real* hTemp, real* h)
 {
 	h[i] = hTemp[i];
 }
 
-void etaLocalFaceValue(int i, real* hTemp, real* z, real* eta)
+void etaLocalFaceValues(int i, real* hTemp, real* z, real* eta)
 {
 	eta[i] = hTemp[i] + z[i];
 }
 
-void hWestFaceValue(real hWestUpwind, real* hTemp, real* hWest)
+void hWestFaceValues(real hWestUpwind, real* hTemp, real* hWest)
 {
 	hWest[0] = hWestUpwind;
 
@@ -428,7 +496,7 @@ void hWestFaceValue(real hWestUpwind, real* hTemp, real* hWest)
 	}
 }
 
-void qWestFaceValue(real qWestUpwind, real* qTemp, real* qWest)
+void qWestFaceValues(real qWestUpwind, real* qTemp, real* qWest)
 {
 	qWest[0] = qWestUpwind;
 
@@ -441,7 +509,7 @@ void qWestFaceValue(real qWestUpwind, real* qTemp, real* qWest)
 	}
 }
 
-void etaWestFaceValue(real hWestUpwind, real* hTemp, real* etaTemp, real* etaWest)
+void etaWestFaceValues(real hWestUpwind, real* hTemp, real* etaTemp, real* etaWest)
 {
 	// indexing shifted by one, since uTemp[0] is the ghost mode
 	etaWest[0] = etaTemp[1] - hTemp[1] + hWestUpwind;
@@ -455,7 +523,7 @@ void etaWestFaceValue(real hWestUpwind, real* hTemp, real* etaTemp, real* etaWes
 	}
 }
 
-void hEastFaceValue(real hEastDownwind, real* hTemp, real* hEast)
+void hEastFaceValues(real hEastDownwind, real* hTemp, real* hEast)
 {
 	int i;
 
@@ -468,7 +536,7 @@ void hEastFaceValue(real hEastDownwind, real* hTemp, real* hEast)
 	hEast[cells] = hEastDownwind;
 }
 
-void qEastFaceValue(real qEastDownwind, real* qTemp, real* qEast)
+void qEastFaceValues(real qEastDownwind, real* qTemp, real* qEast)
 {
 	int i;
 
@@ -481,7 +549,7 @@ void qEastFaceValue(real qEastDownwind, real* qTemp, real* qEast)
 	qEast[cells] = qEastDownwind;
 }
 
-void etaEastFaceValue(real hEastDownwind, real* hTemp, real* etaTemp, real* etaEast)
+void etaEastFaceValues(real hEastDownwind, real* hTemp, real* etaTemp, real* etaEast)
 {
 	int i;
 
@@ -491,4 +559,163 @@ void etaEastFaceValue(real hEastDownwind, real* hTemp, real* etaTemp, real* etaE
 	}
 
 	etaEast[cells] = etaTemp[cells] - hTemp[cells] + hEastDownwind;
+}
+
+void uWestFaceValues(real* qWest, real* hWest, real* uWest)
+{
+	for (int i = 0; i < cells + 1; i++)
+	{
+		if (hWest[i] <= tolDry)
+		{
+			uWest[i] = 0;
+		}
+		else
+		{
+			uWest[i] = qWest[i] / hWest[i];
+		}
+	}
+}
+
+void uEastFaceValues(real* qEast, real* hEast, real* uEast)
+{
+	for (int i = 0; i < cells + 1; i++)
+	{
+		if (hEast[i] <= tolDry)
+		{
+			uEast[i] = 0;
+		}
+		else
+		{
+			uEast[i] = qEast[i] / hEast[i];
+		}
+	}
+}
+
+void zStarIntermediateValues(real* etaWest, real* etaEast, real* hWest, real* hEast, real* zStarIntermediate)
+{
+	real a, b;
+	
+	for (int i = 0; i < cells + 1; i++)
+	{
+		a = etaWest[i] - hWest[i];
+		b = etaEast[i] - hEast[i];
+
+		zStarIntermediate[i] = max(a, b);
+	}
+}
+
+void deltaWestValues(real* etaWest, real* zStarIntermediate, real* deltaWest)
+{
+	real a;
+
+	for (int i = 0; i < cells + 1; i++)
+	{
+		a = etaWest[i] - zStarIntermediate[i];
+		deltaWest[i] = max(0.0, -a);
+	}
+}
+
+void deltaEastValues(real* etaEast, real* zStarIntermediate, real* deltaEast)
+{
+	real a;
+
+	for (int i = 0; i < cells + 1; i++)
+	{
+		a = etaEast[i] - zStarIntermediate[i];
+		deltaEast[i] = max(0.0, -a);
+	}
+}
+
+// identical for both east and weat
+void hStarValues(real* etaFaceValue, real* zStarIntermediate, real* hStar)
+{
+	real a;
+
+	for (int i = 0; i < cells + 1; i++)
+	{
+		a = etaFaceValue[i] - zStarIntermediate[i];
+		hStar[i] = max(0.0, a);
+	}
+}
+
+// identical for both east and west
+void qStarValues(real* uFaceValue, real* hStar, real* qStar)
+{
+	for (int i = 0; i < cells + 1; i++)
+	{
+		qStar[i] = uFaceValue[i] * hStar[i];
+	}
+}
+
+void zStarValues(real* deltaWest, real* deltaEast, real* zStarIntermediate, real* zStar)
+{
+	// wherever east =/= 0, west must be 0 and vice versa, so this works
+	for (int i = 0; i < cells + 1; i++)
+	{
+		zStar[i] = zStarIntermediate[i] - deltaEast[i] - deltaWest[i];
+	}
+}
+
+void fluxHLL(real* hWestStar, real* hEastStar, real* qWestStar, real* qEastStar, real* uWest, real* uEast, real* massFlux, real* momentumFlux)
+{
+	real aL, aR, hStar, uStar, aStar, sL, sR, massFL, massFR, momentumFL, momentumFR;
+
+	for (int i = 0; i < cells + 1; i++)
+	{
+		if (hWestStar[i] <= tolDry && hEastStar[i] <= tolDry)
+		{
+			massFlux[i] = 0;
+			momentumFlux[i] = 0;
+			continue;
+		}
+
+		aL = sqrt(g * hWestStar[i]);
+		aR = sqrt(g * hEastStar[i]);
+
+		hStar = pow(((aL + aR) / 2 + (uWest[i] - uEast[i]) / 4), 2) / g;
+
+		uStar = (uWest[i] + uEast[i]) / 2 + aL - aR;
+
+		aStar = sqrt(g * hStar);
+
+		if (hWestStar[i] <= tolDry)
+		{
+			sL = uEast[i] - 2 * aR;
+		}
+		else
+		{
+			sL = min(uWest[i] - aL, uStar - aStar);
+		}
+
+		if (hEastStar[i] <= tolDry)
+		{
+			sR = uWest[i] + 2 * aL;
+		}
+		else
+		{
+			sR = max(uEast[i] + aR, uStar + aStar);
+		}
+
+		massFL = qWestStar[i];
+		massFR = qEastStar[i];
+
+		momentumFL = uWest[i] * qWestStar[i] + g / 2 * pow(hWestStar[i], 2);
+		momentumFR = uEast[i] * qEastStar[i] + g / 2 * pow(hEastStar[i], 2);
+
+		if (sL >= 0)
+		{
+			massFlux[i] = massFL;
+			momentumFlux[i] = momentumFL;
+		}
+		else if (sL < 0 && sR >= 0)
+		{
+			massFlux[i] = sR * massFL - sL * massFR + sL * sR * (hEastStar[i] - hWestStar[i]) / (sR - sL);
+			momentumFlux[i] = sR * momentumFL - sL * momentumFR + sL * sR * (qEastStar[i] - qWestStar[i]) / (sR - sL);
+		}
+		else if (sR < 0)
+		{
+			massFlux[i] = massFR;
+			momentumFlux[i] = momentumFR;
+		}
+	}
 }
