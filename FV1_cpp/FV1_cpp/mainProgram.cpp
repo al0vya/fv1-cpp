@@ -10,7 +10,7 @@ int cells = 10;
 real xmin = 0;
 real xmax = 50;
 
-real simulationTime = 2.5;
+real simulationTime = 1500;
 
 real g = (real)9.80665;
 real manning = 0.0;
@@ -54,8 +54,7 @@ void etaWestFaceValues(real hWestUpwind, real* hTemp, real* etaTemp, real* etaWe
 void hEastFaceValues(real hEastDownwind, real* hTemp, real* hEast);
 void qEastFaceValues(real qEastDownwind, real* qTemp, real* qEast);
 void etaEastFaceValues(real hEastDownwind, real* hTemp, real* etaTemp, real* etaEast);
-void uWestFaceValues(real* qWest, real* hWest, real* uWest);
-void uEastFaceValues(real* qEast, real* hEast, real* uEast);
+void uFaceValues(real* qFace, real* hFace, real* uFace);
 void zStarIntermediateValues(real* etaWest, real* etaEast, real* hWest, real* hEast, real* zStarIntermediate);
 void deltaWestValues(real* etaWest, real* zStarIntermediate, real* deltaWest);
 void deltaEastValues(real* etaEast, real* zStarIntermediate, real* deltaEast);
@@ -71,6 +70,9 @@ int main()
 {
 	// quintessential for-loop index
 	int i;
+
+	int step = 0;
+
 	real u;
 	real dtCFL;
 
@@ -169,6 +171,8 @@ int main()
 
 	while (timeNow < simulationTime)
 	{
+		timeNow += dt;
+		
 		if (timeNow - simulationTime > 0)
 		{
 			timeNow -= dt;
@@ -181,7 +185,7 @@ int main()
 		hAddGhostBoundaryConditions(h, hWithBC);
 		zAddGhostBoundaryConditions(z, zWithBC);
 
-		// extract upwind and downwind modes for use in fv1Operator
+		// extract upwind and downwind modes
 		real hWestUpwind = hWithBC[0];
 		real qWestUpwind = qWithBC[0];
 
@@ -243,8 +247,8 @@ int main()
 		etaWestFaceValues(hWestUpwind, hTemp, etaTemp, etaWest);
 
 		// initialising velocity interface values
-		uWestFaceValues(qWest, hWest, uWest);
-		uEastFaceValues(qEast, hEast, uEast);
+		uFaceValues(qWest, hWest, uWest);
+		uFaceValues(qEast, hEast, uEast);
 
 		zStarIntermediateValues(etaWest, etaEast, hWest, hEast, zStarIntermediate);
 
@@ -301,6 +305,7 @@ int main()
 
 			if (h[i] <= tolDry)
 			{
+				q[i] = 0;
 				continue;
 			}
 			else
@@ -311,12 +316,15 @@ int main()
 			}
 		}
 
+		step++;
 		for (i = 0; i < cells; i++)
 		{
-			printf("%f, ", momentumFlux[i]);
+			printf("%f, ", h[i]);
 		}
 		printf("\n");
 	}
+
+	printf("Finished.\n");
 
 	// delete buffers
 	delete[] x;
@@ -627,32 +635,17 @@ void etaEastFaceValues(real hEastDownwind, real* hTemp, real* etaTemp, real* eta
 	etaEast[cells] = etaTemp[cells] - hTemp[cells] + hEastDownwind;
 }
 
-void uWestFaceValues(real* qWest, real* hWest, real* uWest)
+void uFaceValues(real* qFace, real* hFace, real* uFace)
 {
 	for (int i = 0; i < cells + 1; i++)
 	{
-		if (hWest[i] <= tolDry)
+		if (hFace[i] <= tolDry)
 		{
-			uWest[i] = 0;
+			uFace[i] = 0;
 		}
 		else
 		{
-			uWest[i] = qWest[i] / hWest[i];
-		}
-	}
-}
-
-void uEastFaceValues(real* qEast, real* hEast, real* uEast)
-{
-	for (int i = 0; i < cells + 1; i++)
-	{
-		if (hEast[i] <= tolDry)
-		{
-			uEast[i] = 0;
-		}
-		else
-		{
-			uEast[i] = qEast[i] / hEast[i];
+			uFace[i] = qFace[i] / hFace[i];
 		}
 	}
 }
@@ -775,8 +768,8 @@ void fluxHLL(real* hWestStar, real* hEastStar, real* qWestStar, real* qEastStar,
 		}
 		else if (sL < 0 && sR >= 0)
 		{
-			massFlux[i] = sR * massFL - sL * massFR + sL * sR * (hEastStar[i] - hWestStar[i]) / (sR - sL);
-			momentumFlux[i] = sR * momentumFL - sL * momentumFR + sL * sR * (qEastStar[i] - qWestStar[i]) / (sR - sL);
+			massFlux[i] = (sR * massFL - sL * massFR + sL * sR * hEastStar[i] - hWestStar[i]) / (sR - sL);
+			momentumFlux[i] = (sR * momentumFL - sL * momentumFR + sL * sR * qEastStar[i] - qWestStar[i]) / (sR - sL);
 		}
 		else if (sR < 0)
 		{
