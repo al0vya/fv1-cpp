@@ -1,22 +1,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <algorithm>
+
 using namespace std;
 
 typedef double real;
 
 // Defining simulation parameters //
-int cells = 10;
+int cells = 20;
 real xmin = 0;
 real xmax = 50;
 
-real simulationTime = 1500;
+real simulationTime = 100;
 
-real g = (real)9.80665;
+real g = 9.80665;
 real manning = 0.0;
 
 real hl = 6;
-real hr = 2;
+real hr = 0;
 
 real ql = 0;
 real qr = 0;
@@ -40,7 +41,8 @@ real dt = 1e-4;
 
 // declaring helper functions
 void baselineMesh(real dx, real* x, real* x_int);
-void bedDataDamBreak(real* z_int);
+void bedDataConservative(real* x_int, real* z_int);
+void bedDataDamBreak(real* x_int, real* z_int);
 void qInitialDamBreak(real* x_int, real* q_int);
 void hInitialDamBreak(real* z_int, real* x_int, real* h_int);
 void modalProjectionZeroOrder(real* u_int, real* u);
@@ -65,6 +67,7 @@ void fluxHLL(real* hWestStar, real* hEastStar, real* qWestStar, real* qEastStar,
 void hBarValues(real* hWestStar, real* hEastStar, real* hBar);
 void massFV1OperatorValues(real dx, real* massFlux, real* massFV1Operator);
 void momentumFV1OperatorValues(real dx, real* hBar, real* zBar, real* momentumFlux, real* momentumFV1Operator);
+void frictionImplicit(real dt, real* hWithBC, real* qWithBC);
 
 int main()
 {
@@ -73,8 +76,7 @@ int main()
 
 	int step = 0;
 
-	real u;
-	real dtCFL;
+	real u, dtCFL;
 
 	// coarsest cell size
 	real dx = (xmax - xmin) / (real)cells;
@@ -97,7 +99,7 @@ int main()
 	real* z_int = new real[cells + 1];
 
 	// initialise the interface Valuess
-	bedDataDamBreak(z_int);
+	bedDataDamBreak(x_int, z_int);
 	qInitialDamBreak(x_int, q_int);
 	hInitialDamBreak(z_int, x_int, h_int);
 
@@ -207,6 +209,11 @@ int main()
 			zTemp[i] = c;
 		}
 
+		if (manning > 0)
+		{
+			frictionImplicit(dt, hWithBC, qWithBC);
+		}
+
 		// ghost cells are always 0 i.e. false/wet
 		dry[0] = false;
 		dry[cells + 1] = false;
@@ -305,7 +312,6 @@ int main()
 
 			if (h[i] <= tolDry)
 			{
-				q[i] = 0;
 				continue;
 			}
 			else
@@ -411,14 +417,46 @@ void baselineMesh(real dx, real* x, real* x_int)
 }
 
 // note this function works on the z NODES i.e. interfaces
-void bedDataDamBreak(real* z_int)
+void bedDataDamBreak(real* x_int, real* z_int)
+{
+	for (int i = 0; i < cells + 1; i++)
+	{
+		z_int[i] = 0;
+	}
+}
+
+void bedDataConservative(real* x_int, real* z_int)
 {
 	int i;
+	real a;
 
 	// for (cells+1) interfaces
 	for (i = 0; i < cells + 1; i++)
 	{
-		z_int[i] = 0;
+		a = x_int[i];
+
+		if (a >= 22 && a < 25)
+		{
+			z_int[i] = (0.05) * a - 1.1;
+		}
+		else if (a >= 25 && a <= 28)
+		{
+			z_int[i] = (-0.05) * a + 1.4;
+		}
+		else if (a > 39 && a < 46.5)
+		{
+			z_int[i] = 0.3;
+		}
+		else if (a > 8 && a < 12)
+		{
+			z_int[i] = 0.2 - (0.05 * pow(a - 10, 2));
+		}
+		else
+		{
+			z_int[i] = 0;
+		}
+
+		z_int[i] *= 10;
 	}
 }
 
@@ -768,8 +806,8 @@ void fluxHLL(real* hWestStar, real* hEastStar, real* qWestStar, real* qEastStar,
 		}
 		else if (sL < 0 && sR >= 0)
 		{
-			massFlux[i] = (sR * massFL - sL * massFR + sL * sR * hEastStar[i] - hWestStar[i]) / (sR - sL);
-			momentumFlux[i] = (sR * momentumFL - sL * momentumFR + sL * sR * qEastStar[i] - qWestStar[i]) / (sR - sL);
+			massFlux[i] = (sR * massFL - sL * massFR + sL * sR * (hEastStar[i] - hWestStar[i])) / (sR - sL);
+			momentumFlux[i] = (sR * momentumFL - sL * momentumFR + sL * sR * (qEastStar[i] - qWestStar[i])) / (sR - sL);
 		}
 		else if (sR < 0)
 		{
@@ -805,5 +843,30 @@ void momentumFV1OperatorValues(real dx, real* hBar, real* zBar, real* momentumFl
 	for (int i = 0; i < cells; i++)
 	{
 		momentumFV1Operator[i] = a * (momentumFlux[i + 1] - momentumFlux[i]) + 2 * sqrt(3) * g * hBar[i] * zBar[i];
+	}
+}
+
+void frictionImplicit(real dt, real* hWithBC, real* qWithBC)
+{
+	real qf, hf, u, Sf, D, Cf;
+	
+	for (int i = 0; i < cells + 2; i++)
+	{
+		qf = qWithBC[i];
+		hf = hWithBC[i];
+
+		if (hWithBC[i] > tolDry && abs(qf) > tolDry)
+		{
+			u = qf / hf;
+
+			Cf = g * pow(manning, 2) / pow(hf, 0.333333333);
+
+			Sf = Cf * abs(u) * u;
+
+			D = 1 + 2 * dt * Cf * abs(u) / hf;
+
+			// Update
+			qWithBC[i] += dt * Sf / D;
+		}
 	}
 }
