@@ -32,9 +32,9 @@ real qxImposedDown = 0;
 
 real timeNow = 0;
 
-real CFL = 0.33f;
+real CFL = 0.33;
 
-real tolDry = 1e-3f;
+real tolDry = 1e-3;
 
 real dt = 1e-4;
 
@@ -311,7 +311,11 @@ int main()
 			}
 		}
 
-		printf("Updated time step, h value: %f, q value %f.\n", h[0], q[0]);
+		for (i = 0; i < cells; i++)
+		{
+			printf("%f, ", momentumFlux[i]);
+		}
+		printf("\n");
 	}
 
 	// delete buffers
@@ -543,21 +547,6 @@ void zAddGhostBoundaryConditions(real* z, real* zWithBC)
 	{
 		zWithBC[i] = z[i - 1];
 	}
-}
-
-void qLocalFaceValues(int i, real* qTemp, real* q)
-{
-	q[i] = qTemp[i];
-}
-
-void hLocalFaceValues(int i, real* hTemp, real* h)
-{
-	h[i] = hTemp[i];
-}
-
-void etaLocalFaceValues(int i, real* hTemp, real* z, real* eta)
-{
-	eta[i] = hTemp[i] + z[i];
 }
 
 void hWestFaceValues(real hWestUpwind, real* hTemp, real* hWest)
