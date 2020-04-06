@@ -7,17 +7,17 @@ using namespace std;
 typedef double real;
 
 // Defining simulation parameters //
-int cells = 20;
+int cells = 10;
 real xmin = 0;
 real xmax = 50;
 
-real simulationTime = 100;
+real simulationTime = 50;
 
 real g = 9.80665;
 real manning = 0.0;
 
-real hl = 6;
-real hr = 0;
+real hl = 4;
+real hr = 4;
 
 real ql = 0;
 real qr = 0;
@@ -58,8 +58,7 @@ void qEastFaceValues(real qEastDownwind, real* qTemp, real* qEast);
 void etaEastFaceValues(real hEastDownwind, real* hTemp, real* etaTemp, real* etaEast);
 void uFaceValues(real* qFace, real* hFace, real* uFace);
 void zStarIntermediateValues(real* etaWest, real* etaEast, real* hWest, real* hEast, real* zStarIntermediate);
-void deltaWestValues(real* etaWest, real* zStarIntermediate, real* deltaWest);
-void deltaEastValues(real* etaEast, real* zStarIntermediate, real* deltaEast);
+void deltaValues(real* etaFace, real* zStarIntermediate, real* deltaFace);
 void hStarValues(real* etaFaceValue, real* zStarIntermediate, real* hStar);
 void qStarValues(real* uFaceValue, real* hStar, real* qStar);
 void zStarValues(real* deltaWest, real* deltaEast, real* zStarIntermediate, real* zStar);
@@ -99,7 +98,7 @@ int main()
 	real* z_int = new real[cells + 1];
 
 	// initialise the interface Valuess
-	bedDataDamBreak(x_int, z_int);
+	bedDataConservative(x_int, z_int);
 	qInitialDamBreak(x_int, q_int);
 	hInitialDamBreak(z_int, x_int, h_int);
 
@@ -239,7 +238,7 @@ int main()
 			}
 		}
 
-		for (i = 0; i < cells + 1; i++)
+		for (i = 0; i < cells + 2; i++)
 		{
 			etaTemp[i] = hTemp[i] + zTemp[i];
 		}
@@ -259,8 +258,8 @@ int main()
 
 		zStarIntermediateValues(etaWest, etaEast, hWest, hEast, zStarIntermediate);
 
-		deltaWestValues(etaWest, zStarIntermediate, deltaWest);
-		deltaEastValues(etaEast, zStarIntermediate, deltaEast);
+		deltaValues(etaWest, zStarIntermediate, deltaWest);
+		deltaValues(etaEast, zStarIntermediate, deltaEast);
 
 		// initialising positivity preserving nodes
 		hStarValues(etaWest, zStarIntermediate, hWestStar);
@@ -323,11 +322,12 @@ int main()
 		}
 
 		step++;
+
 		for (i = 0; i < cells; i++)
 		{
 			printf("%f, ", h[i]);
 		}
-		printf("\n");
+		printf("%f s\n", timeNow);
 	}
 
 	printf("Finished.\n");
@@ -416,40 +416,30 @@ void baselineMesh(real dx, real* x, real* x_int)
 	x[cells - 1] = (x_int[cells] + x_int[cells - 1]) / 2;
 }
 
-// note this function works on the z NODES i.e. interfaces
-void bedDataDamBreak(real* x_int, real* z_int)
-{
-	for (int i = 0; i < cells + 1; i++)
-	{
-		z_int[i] = 0;
-	}
-}
-
 void bedDataConservative(real* x_int, real* z_int)
 {
-	int i;
 	real a;
 
 	// for (cells+1) interfaces
-	for (i = 0; i < cells + 1; i++)
+	for (int i = 0; i < cells + 1; i++)
 	{
 		a = x_int[i];
 
 		if (a >= 22 && a < 25)
 		{
-			z_int[i] = (0.05) * a - 1.1;
+			z_int[i] = 0.05 * a - 1.1;
 		}
 		else if (a >= 25 && a <= 28)
 		{
-			z_int[i] = (-0.05) * a + 1.4;
+			z_int[i] = -0.05 * a + 1.4;
+		}
+		else if (a > 8 && a < 12)
+		{
+			z_int[i] = 0.2 - 0.05 * pow(a - 10, 2);
 		}
 		else if (a > 39 && a < 46.5)
 		{
 			z_int[i] = 0.3;
-		}
-		else if (a > 8 && a < 12)
-		{
-			z_int[i] = 0.2 - (0.05 * pow(a - 10, 2));
 		}
 		else
 		{
@@ -457,6 +447,22 @@ void bedDataConservative(real* x_int, real* z_int)
 		}
 
 		z_int[i] *= 10;
+	}
+}
+
+// note this function works on the z NODES i.e. interfaces
+void bedDataDamBreak(real* x_int, real* z_int)
+{
+	for (int i = 0; i < cells + 1; i++)
+	{
+		if (x_int[i] <= 25)
+		{
+			z_int[i] = 1;
+		}
+		else
+		{
+			z_int[i] = 1;
+		}
 	}
 }
 
@@ -502,10 +508,8 @@ void hInitialDamBreak(real* z_int, real* x_int, real* h_int)
 
 void modalProjectionZeroOrder(real* u_int, real* u)
 {
-	int i;
-
 	// for modes, so loops overs cells rather than (cells+1) interfaces
-	for (i = 0; i < cells; i++)
+	for (int i = 0; i < cells; i++)
 	{
 		u[i] = (u_int[i] + u_int[i + 1]) / 2;
 	}
@@ -515,7 +519,7 @@ void modalProjectionFirstOrder(real* u_int, real* u)
 {
 	for (int i = 0; i < cells; i++)
 	{
-		u[i] = (u_int[i + 1] - u_int[i]) / 2 * sqrt(3);
+		u[i] = (u_int[i + 1] - u_int[i]) / (2 * sqrt(3.0));
 	}
 }
 
@@ -540,9 +544,7 @@ void qAddGhostBoundaryConditions(real* q, real* qWithBC)
 	// there are cells + 2 elements inc BCs
 	qWithBC[cells + 1] = qDown;
 
-	int i;
-
-	for (i = 1; i < cells + 1; i++)
+	for (int i = 1; i < cells + 1; i++)
 	{
 		qWithBC[i] = q[i - 1];
 	}
@@ -569,9 +571,7 @@ void hAddGhostBoundaryConditions(real* h, real* hWithBC)
 	// there are cells + 2 elements inc BCs
 	hWithBC[cells + 1] = hDown;
 
-	int i;
-
-	for (i = 1; i < cells + 1; i++)
+	for (int i = 1; i < cells + 1; i++)
 	{
 		hWithBC[i] = h[i - 1];
 	}
@@ -587,9 +587,7 @@ void zAddGhostBoundaryConditions(real* z, real* zWithBC)
 	// there are cells + 2 elements inc BCs
 	zWithBC[cells + 1] = zDown;
 
-	int i;
-
-	for (i = 1; i < cells + 1; i++)
+	for (int i = 1; i < cells + 1; i++)
 	{
 		zWithBC[i] = z[i - 1];
 	}
@@ -599,10 +597,8 @@ void hWestFaceValues(real hWestUpwind, real* hTemp, real* hWest)
 {
 	hWest[0] = hWestUpwind;
 
-	int i;
-
 	// start from 1 on hTemp to avoid ghost cell
-	for (i = 1; i < cells + 1; i++)
+	for (int i = 1; i < cells + 1; i++)
 	{
 		hWest[i] = hTemp[i];
 	}
@@ -612,10 +608,8 @@ void qWestFaceValues(real qWestUpwind, real* qTemp, real* qWest)
 {
 	qWest[0] = qWestUpwind;
 
-	int i;
-
 	// start from 1 on qTemp to avoid ghost cell
-	for (i = 1; i < cells + 1; i++)
+	for (int i = 1; i < cells + 1; i++)
 	{
 		qWest[i] = qTemp[i];
 	}
@@ -626,10 +620,8 @@ void etaWestFaceValues(real hWestUpwind, real* hTemp, real* etaTemp, real* etaWe
 	// indexing shifted by one, since uTemp[0] is the ghost mode
 	etaWest[0] = etaTemp[1] - hTemp[1] + hWestUpwind;
 
-	int i;
-
 	// similarly shifted, start from 1 on temp to avoid ghost cell
-	for (i = 1; i < cells + 1; i++)
+	for (int i = 1; i < cells + 1; i++)
 	{
 		etaWest[i] = etaTemp[i];
 	}
@@ -637,10 +629,8 @@ void etaWestFaceValues(real hWestUpwind, real* hTemp, real* etaTemp, real* etaWe
 
 void hEastFaceValues(real hEastDownwind, real* hTemp, real* hEast)
 {
-	int i;
-
 	// [i+1] on hTemp to skip ghost cell
-	for (i = 0; i < cells; i++)
+	for (int i = 0; i < cells; i++)
 	{
 		hEast[i] = hTemp[i + 1];
 	}
@@ -650,10 +640,8 @@ void hEastFaceValues(real hEastDownwind, real* hTemp, real* hEast)
 
 void qEastFaceValues(real qEastDownwind, real* qTemp, real* qEast)
 {
-	int i;
-
 	// [i+1] on qTemp to skip ghost cell
-	for (i = 0; i < cells; i++)
+	for (int i = 0; i < cells; i++)
 	{
 		qEast[i] = qTemp[i + 1];
 	}
@@ -663,9 +651,7 @@ void qEastFaceValues(real qEastDownwind, real* qTemp, real* qEast)
 
 void etaEastFaceValues(real hEastDownwind, real* hTemp, real* etaTemp, real* etaEast)
 {
-	int i;
-
-	for (i = 0; i < cells; i++)
+	for (int i = 0; i < cells; i++)
 	{
 		etaEast[i] = etaTemp[i + 1];
 	}
@@ -701,25 +687,14 @@ void zStarIntermediateValues(real* etaWest, real* etaEast, real* hWest, real* hE
 	}
 }
 
-void deltaWestValues(real* etaWest, real* zStarIntermediate, real* deltaWest)
+void deltaValues(real* etaFace, real* zStarIntermediate, real* deltaFace)
 {
 	real a;
 
 	for (int i = 0; i < cells + 1; i++)
 	{
-		a = etaWest[i] - zStarIntermediate[i];
-		deltaWest[i] = max(0.0, -a);
-	}
-}
-
-void deltaEastValues(real* etaEast, real* zStarIntermediate, real* deltaEast)
-{
-	real a;
-
-	for (int i = 0; i < cells + 1; i++)
-	{
-		a = etaEast[i] - zStarIntermediate[i];
-		deltaEast[i] = max(0.0, -a);
+		a = etaFace[i] - zStarIntermediate[i];
+		deltaFace[i] = max(0.0, -a);
 	}
 }
 
@@ -799,7 +774,7 @@ void fluxHLL(real* hWestStar, real* hEastStar, real* qWestStar, real* qEastStar,
 		momentumFL = uWest[i] * qWestStar[i] + g / 2 * pow(hWestStar[i], 2);
 		momentumFR = uEast[i] * qEastStar[i] + g / 2 * pow(hEastStar[i], 2);
 
-		if (sL >= 0)
+	if (sL >= 0)
 		{
 			massFlux[i] = massFL;
 			momentumFlux[i] = momentumFL;
@@ -839,10 +814,14 @@ void massFV1OperatorValues(real dx, real* massFlux, real* massFV1Operator)
 void momentumFV1OperatorValues(real dx, real* hBar, real* zBar, real* momentumFlux, real* momentumFV1Operator)
 {
 	real a = -(1 / dx);
+	real b, c;
 
 	for (int i = 0; i < cells; i++)
 	{
-		momentumFV1Operator[i] = a * (momentumFlux[i + 1] - momentumFlux[i]) + 2 * sqrt(3) * g * hBar[i] * zBar[i];
+		b = a * (momentumFlux[i + 1] - momentumFlux[i]);
+		c = 2 * sqrt(3.0) * g * hBar[i] * zBar[i];
+
+		momentumFV1Operator[i] = b + c;
 	}
 }
 
