@@ -774,7 +774,7 @@ void fluxHLL(real* hWestStar, real* hEastStar, real* qWestStar, real* qEastStar,
 		momentumFL = uWest[i] * qWestStar[i] + g / 2 * pow(hWestStar[i], 2);
 		momentumFR = uEast[i] * qEastStar[i] + g / 2 * pow(hEastStar[i], 2);
 
-	if (sL >= 0)
+		if (sL >= 0)
 		{
 			massFlux[i] = massFL;
 			momentumFlux[i] = momentumFL;
