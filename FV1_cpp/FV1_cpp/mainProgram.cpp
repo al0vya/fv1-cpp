@@ -11,19 +11,19 @@ int cells = 10;
 real xmin = 0;
 real xmax = 50;
 
-real simulationTime = 50;
+real simulationTime = 500;
 
 real g = 9.80665;
-real manning = 0.0;
+real manning = 0.02;
 
 real hl = 4;
-real hr = 4;
+real hr = 0;
 
 real ql = 0;
 real qr = 0;
 
-real reflectUp = 1;
-real reflectDown = 1;
+real reflectUp = -1;
+real reflectDown = -1;
 
 real hImposedUp = 0;
 real qxImposedUp = 0;
@@ -98,7 +98,7 @@ int main()
 	real* z_int = new real[cells + 1];
 
 	// initialise the interface Valuess
-	bedDataConservative(x_int, z_int);
+	bedDataDamBreak(x_int, z_int);
 	qInitialDamBreak(x_int, q_int);
 	hInitialDamBreak(z_int, x_int, h_int);
 
@@ -457,11 +457,11 @@ void bedDataDamBreak(real* x_int, real* z_int)
 	{
 		if (x_int[i] <= 25)
 		{
-			z_int[i] = 1;
+			z_int[i] = 0;
 		}
 		else
 		{
-			z_int[i] = 1;
+			z_int[i] = 0;
 		}
 	}
 }
@@ -818,10 +818,10 @@ void momentumFV1OperatorValues(real dx, real* hBar, real* zBar, real* momentumFl
 
 	for (int i = 0; i < cells; i++)
 	{
-		b = a * (momentumFlux[i + 1] - momentumFlux[i]);
+		b = momentumFlux[i + 1] - momentumFlux[i];
 		c = 2 * sqrt(3.0) * g * hBar[i] * zBar[i];
 
-		momentumFV1Operator[i] = b + c;
+		momentumFV1Operator[i] = a * (b + c);
 	}
 }
 
