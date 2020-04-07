@@ -1,10 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <algorithm>
+#include <cmath>
+#include "baselineMesh.h"
+#include "real.h"
 
 using namespace std;
-
-typedef double real;
 
 // Defining simulation parameters //
 int cells = 10;
@@ -13,17 +14,17 @@ real xmax = 50;
 
 real simulationTime = 500;
 
-real g = 9.80665;
-real manning = 0.02;
+real g = C(9.80665);
+real manning = C(0.0);
 
-real hl = 4;
+real hl = 2;
 real hr = 0;
 
 real ql = 0;
 real qr = 0;
 
-real reflectUp = -1;
-real reflectDown = -1;
+real reflectUp = 1;
+real reflectDown = 1;
 
 real hImposedUp = 0;
 real qxImposedUp = 0;
@@ -33,14 +34,13 @@ real qxImposedDown = 0;
 
 real timeNow = 0;
 
-real CFL = 0.33;
+real CFL = C(0.33);
 
-real tolDry = 1e-3;
+real tolDry = C(1e-3);
 
-real dt = 1e-4;
+real dt = C(1e-4);
 
 // declaring helper functions
-void baselineMesh(real dx, real* x, real* x_int);
 void bedDataConservative(real* x_int, real* z_int);
 void bedDataDamBreak(real* x_int, real* z_int);
 void qInitialDamBreak(real* x_int, real* q_int);
@@ -316,7 +316,7 @@ int main()
 			else
 			{
 				u = q[i] / h[i];
-				dtCFL = CFL * dx / (abs(u) + sqrt(g * h[i]));
+				dtCFL = CFL * dx / (abs(u) + std::sqrt(g * h[i]));
 				dt = min(dt, dtCFL);
 			}
 		}
@@ -398,13 +398,12 @@ int main()
 
 void baselineMesh(real dx, real* x, real* x_int)
 {
-	int i;
 	real a, b;
 
 	x_int[0] = xmin;
 	x_int[cells] = xmax;
 
-	for (i = 1; i < cells; i++) {
+	for (int i = 1; i < cells; i++) {
 		a = x_int[i - 1];
 		b = a + dx;
 
@@ -427,23 +426,23 @@ void bedDataConservative(real* x_int, real* z_int)
 
 		if (a >= 22 && a < 25)
 		{
-			z_int[i] = 0.05 * a - 1.1;
+			z_int[i] = C(0.05) * a - C(1.1);
 		}
 		else if (a >= 25 && a <= 28)
 		{
-			z_int[i] = -0.05 * a + 1.4;
+			z_int[i] = C(-0.05) * a + C(1.4);
 		}
 		else if (a > 8 && a < 12)
 		{
-			z_int[i] = 0.2 - 0.05 * pow(a - 10, 2);
+			z_int[i] = C(0.2) - C(0.05) * pow(a - 10, 2);
 		}
 		else if (a > 39 && a < 46.5)
 		{
-			z_int[i] = 0.3;
+			z_int[i] = C(0.3); // whereas here, 0.3 is a double literal, dangerous to cast it to a float
 		}
 		else
 		{
-			z_int[i] = 0;
+			z_int[i] = 0; // this is safe because you're casting an int literal to a real
 		}
 
 		z_int[i] *= 10;
@@ -469,10 +468,8 @@ void bedDataDamBreak(real* x_int, real* z_int)
 // note this function works on the interfaces
 void qInitialDamBreak(real* x_int, real* q_int)
 {
-	int i;
-
 	// recall for loop is for (cells+1) interfaces
-	for (i = 0; i < cells + 1; i++)
+	for (int i = 0; i < cells + 1; i++)
 	{
 		if (x_int[i] <= 32.5)
 		{
@@ -490,18 +487,26 @@ void hInitialDamBreak(real* z_int, real* x_int, real* h_int)
 	real etaLeft = hl;
 	real etaRight = hr;
 
-	int i;
-
 	// recall for loop is for (cells+1) interfaces
-	for (i = 0; i < cells + 1; i++)
+	for (int i = 0; i < cells + 1; i++)
 	{
 		if (x_int[i] <= 25)
 		{
 			h_int[i] = etaLeft - z_int[i];
+
+			if (h_int[i] < 0)
+			{
+				h_int[i] = 0;
+			}
 		}
 		else
 		{
 			h_int[i] = etaRight - z_int[i];
+
+			if (h_int[i] < 0)
+			{
+				h_int[i] = 0;
+			}
 		}
 	}
 }
@@ -519,7 +524,7 @@ void modalProjectionFirstOrder(real* u_int, real* u)
 {
 	for (int i = 0; i < cells; i++)
 	{
-		u[i] = (u_int[i + 1] - u_int[i]) / (2 * sqrt(3.0));
+		u[i] = (u_int[i + 1] - u_int[i]) / (2 * sqrt(C(3.0)));
 	}
 }
 
@@ -694,7 +699,7 @@ void deltaValues(real* etaFace, real* zStarIntermediate, real* deltaFace)
 	for (int i = 0; i < cells + 1; i++)
 	{
 		a = etaFace[i] - zStarIntermediate[i];
-		deltaFace[i] = max(0.0, -a);
+		deltaFace[i] = max(C(0.0), -a);
 	}
 }
 
@@ -706,7 +711,7 @@ void hStarValues(real* etaFaceValue, real* zStarIntermediate, real* hStar)
 	for (int i = 0; i < cells + 1; i++)
 	{
 		a = etaFaceValue[i] - zStarIntermediate[i];
-		hStar[i] = max(0.0, a);
+		hStar[i] = max(C(0.0), a);
 	}
 }
 
@@ -819,7 +824,7 @@ void momentumFV1OperatorValues(real dx, real* hBar, real* zBar, real* momentumFl
 	for (int i = 0; i < cells; i++)
 	{
 		b = momentumFlux[i + 1] - momentumFlux[i];
-		c = 2 * sqrt(3.0) * g * hBar[i] * zBar[i];
+		c = 2 * sqrt(C(3.0)) * g * hBar[i] * zBar[i];
 
 		momentumFV1Operator[i] = a * (b + c);
 	}
@@ -838,9 +843,9 @@ void frictionImplicit(real dt, real* hWithBC, real* qWithBC)
 		{
 			u = qf / hf;
 
-			Cf = g * pow(manning, 2) / pow(hf, 0.333333333);
+			Cf = g * pow(manning, C(2.0)) / pow(hf, C(1.0)/C(3.0));
 
-			Sf = Cf * abs(u) * u;
+			Sf = -Cf * abs(u) * u;
 
 			D = 1 + 2 * dt * Cf * abs(u) / hf;
 
