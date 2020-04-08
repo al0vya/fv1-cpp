@@ -24,6 +24,7 @@ typedef struct BoundaryConditions
 
 	real hImposedDown;
 	real qxImposedDown;
+
 } BoundaryConditions;
 
 /*
@@ -50,6 +51,7 @@ typedef struct SolverParameters
 	real CFL;
 	real tolDry;
 	real g;
+
 } SolverParameters;
 
 // declaring helper functions
@@ -87,10 +89,10 @@ int main()
 	int step = 0;
 
 	SimulationParameters simulationParameters;
-	simulationParameters.cells = 10;
+	simulationParameters.cells = 30;
 	simulationParameters.xmin = 0;
 	simulationParameters.xmax = 50;
-	simulationParameters.simulationTime = C(500.0);
+	simulationParameters.simulationTime = C(1500.0);
 	simulationParameters.manning = C(0.02);
 
 	SolverParameters solverParameters;
@@ -121,14 +123,14 @@ int main()
 	real* z_int = new real[simulationParameters.cells + 1];
 
 	BoundaryConditions bcs;
-	bcs.hl = C(12.0);
+	bcs.hl = C(6.0);
 	bcs.hr = C(0.0);
 
 	bcs.ql = C(0.0);
 	bcs.qr = C(0.0);
 
 	bcs.reflectUp = C(1.0);
-	bcs.reflectDown = C(-1.0);
+	bcs.reflectDown = C(1.0);
 
 	bcs.hImposedUp = C(0.0);
 	bcs.qxImposedUp = C(0.0);
@@ -376,11 +378,20 @@ int main()
 
 		step++;
 
-		for (i = 0; i < simulationParameters.cells; i++)
-		{
-			printf("%f, ", h[i] + z[i]);
-		}
+		
 		printf("%f s\n", timeNow);
+	}
+
+	for (i = 0; i < simulationParameters.cells; i++)
+	{
+		printf("%0.2f, ", h[i] + z[i]);
+	}
+
+	printf("\n");
+
+	for (i = 0; i < simulationParameters.cells; i++)
+	{
+		printf("%0.2f, ", z[i]);
 	}
 
 	printf("Finished.\n");
