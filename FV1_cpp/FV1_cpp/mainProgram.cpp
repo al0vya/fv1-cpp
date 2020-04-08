@@ -2,57 +2,14 @@
 #include <stdio.h>
 #include <algorithm>
 #include <cmath>
+
 #include "baselineMesh.h"
 #include "real.h"
-#include "simulationParameters.h"
+#include "SimulationParameters.h"
+#include "SolverParameters.h"
+#include "BoundaryConditions.h"
 
 using namespace std;
-
-typedef struct BoundaryConditions
-{
-	real hl;
-	real hr;
-
-	real ql;
-	real qr;
-	
-	real reflectUp;
-	real reflectDown;
-
-	real hImposedUp;
-	real qxImposedUp;
-
-	real hImposedDown;
-	real qxImposedDown;
-
-} BoundaryConditions;
-
-/*
-requires /std:c++latest
-the (slight) advantage is bcs will be initialised upon construction
-there is never a time when bcs is (partially) uninitialised
-
-BoundaryConditions bcs = {
-	.hl = C(2.0),
-	.hr = C(0.0),
-	.ql = C(0.0),
-	.qr = C(0.0),
-	.reflectUp = C(0.0),
-	.reflectDown = C(0.0),
-	.hImposedUp = C(0.0),
-	.qxImposedUp = C(0.0),
-	.hImposedDown = C(0.0),
-	.qxImposedDown = C(0.0)
-};
-*/
-
-typedef struct SolverParameters
-{
-	real CFL;
-	real tolDry;
-	real g;
-
-} SolverParameters;
 
 // declaring helper functions
 void bedDataConservative(SimulationParameters simulationParameters, real* x_int, real* z_int);
@@ -89,10 +46,10 @@ int main()
 	int step = 0;
 
 	SimulationParameters simulationParameters;
-	simulationParameters.cells = 30;
+	simulationParameters.cells = 100;
 	simulationParameters.xmin = 0;
 	simulationParameters.xmax = 50;
-	simulationParameters.simulationTime = C(1500.0);
+	simulationParameters.simulationTime = C(20.);
 	simulationParameters.manning = C(0.02);
 
 	SolverParameters solverParameters;
@@ -209,7 +166,6 @@ int main()
 	real* massFV1Operator = new real[simulationParameters.cells];
 	real* momentumFV1Operator = new real[simulationParameters.cells];
 
-	// WHILE LOOP STARTS FROM HERE //
 	real timeNow = 0;
 	real dt = C(1e-4);
 
@@ -379,22 +335,20 @@ int main()
 		step++;
 
 		
-		printf("%f s\n", timeNow);
+		//printf("%f s\n", timeNow);
 	}
 
 	for (i = 0; i < simulationParameters.cells; i++)
 	{
-		printf("%0.2f, ", h[i] + z[i]);
+		printf("%0.2f\n", h[i] + z[i]);
 	}
 
 	printf("\n");
 
-	for (i = 0; i < simulationParameters.cells; i++)
+	/*for (i = 0; i < simulationParameters.cells; i++)
 	{
-		printf("%0.2f, ", z[i]);
-	}
-
-	printf("Finished.\n");
+		printf("%0.2f\n", x[i]);
+	}*/
 
 	// delete buffers
 	delete[] x;
