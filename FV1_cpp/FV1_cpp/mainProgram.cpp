@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <algorithm>
 #include <cmath>
+#include <time.h>
+#include <iostream>
+#include <fstream>
 
 #include "real.h"
 #include "SimulationParameters.h"
@@ -13,22 +16,25 @@
 #include "frictionImplicit.h"
 #include "uFaceValues.h"
 #include "fluxHLL.h"
+#include "fluxHLLNew.h"
 
 using namespace std;
 
 int main()
 {
+	clock_t start = clock();
+
 	// quintessential for-loop index
 	int i;
 
 	int step = 0;
 
 	SimulationParameters simulationParameters;
-	simulationParameters.cells = 100;
+	simulationParameters.cells = 512;
 	simulationParameters.xmin = 0;
 	simulationParameters.xmax = 50;
-	simulationParameters.simulationTime = C(20.);
-	simulationParameters.manning = C(0.02);
+	simulationParameters.simulationTime = C(100.0);
+	simulationParameters.manning = C(0.0);
 
 	SolverParameters solverParameters;
 	solverParameters.CFL = C(0.33);
@@ -36,8 +42,8 @@ int main()
 	solverParameters.g = C(9.80665);
 
 	BoundaryConditions bcs;
-	bcs.hl = C(6.0);
-	bcs.hr = C(0.0);
+	bcs.hl = C(2.0);
+	bcs.hr = C(2.0);
 
 	bcs.ql = C(0.0);
 	bcs.qr = C(0.0);
@@ -55,25 +61,25 @@ int main()
 	real dx = (simulationParameters.xmax - simulationParameters.xmin) / simulationParameters.cells;
 
 	// allocate buffer for interfaces
-	real* x_int = new real[simulationParameters.cells + 1];
+	real* xInt = new real[simulationParameters.cells + 1];
 
 	// initialise baseline mesh
 	for (i = 0; i < simulationParameters.cells + 1; i++)
 	{
-		x_int[i] = simulationParameters.xmin + i * dx;
+		xInt[i] = simulationParameters.xmin + i * dx;
 	}
 
 	// allocate buffers for flow nodes
-	real* q_int = new real[simulationParameters.cells + 1];
-	real* h_int = new real[simulationParameters.cells + 1];
-	real* z_int = new real[simulationParameters.cells + 1];
+	real* qInt = new real[simulationParameters.cells + 1];
+	real* hInt = new real[simulationParameters.cells + 1];
+	real* zInt = new real[simulationParameters.cells + 1];
 
 	// initial interface values
 	for (i = 0; i < simulationParameters.cells + 1; i++)
 	{
-		z_int[i] = bedDataConservative(x_int[i]);
-		h_int[i] = hInitial(bcs, z_int[i], x_int[i]);
-		q_int[i] = qInitial(bcs, x_int[i]);
+		zInt[i] = bedDataConservative(xInt[i]);
+		hInt[i] = hInitial(bcs, zInt[i], xInt[i]);
+		qInt[i] = qInitial(bcs, xInt[i]);
 	}
 
 	// allocate buffers for flow modes with ghost BCs
@@ -84,13 +90,13 @@ int main()
 	// project to find the modes
 	for (int i = 1; i < simulationParameters.cells + 1; i++)
 	{
-		qWithBC[i] = (q_int[i - 1] + q_int[i]) / 2;
-		hWithBC[i] = (h_int[i - 1] + h_int[i]) / 2;
-		zWithBC[i] = (z_int[i - 1] + z_int[i]) / 2;
+		qWithBC[i] = (qInt[i - 1] + qInt[i]) / 2;
+		hWithBC[i] = (hInt[i - 1] + hInt[i]) / 2;
+		zWithBC[i] = (zInt[i - 1] + zInt[i]) / 2;
 	}
 
 	// allocate true/false buffer for dry cells
-	bool* dry = new bool[simulationParameters.cells + 2];
+	int* dry = new int[simulationParameters.cells + 2];
 
 	real* etaTemp = new real[simulationParameters.cells + 2];
 
@@ -110,13 +116,11 @@ int main()
 	real* qWestStar = new real[simulationParameters.cells + 1];
 	real* hWestStar = new real[simulationParameters.cells + 1];
 
-	real* zStarIntermediate = new real[simulationParameters.cells + 1];
-	real* zStar = new real[simulationParameters.cells + 1];
-	 
-	real* uWest = new real[simulationParameters.cells + 1];
-	real* uEast = new real[simulationParameters.cells + 1];
-
-	real* delta = new real[simulationParameters.cells + 1];
+	real* zWestStar = new real[simulationParameters.cells + 1];
+	real* zEastStar = new real[simulationParameters.cells + 1];
+	
+	real* deltaWest = new real[simulationParameters.cells + 1];
+	real* deltaEast = new real[simulationParameters.cells + 1];
 
 	// allocating buffers for numerical fluxes from HLL solver
 	real* massFlux = new real[simulationParameters.cells + 1];
@@ -127,7 +131,9 @@ int main()
 	real* zBar = new real[simulationParameters.cells];
 
 	real timeNow = 0;
-	real dt = C(1e-4);
+	real dt = C(1e-3);
+
+	int firstTimeStep = 1;
 
 	while (timeNow < simulationParameters.simulationTime)
 	{
@@ -141,41 +147,14 @@ int main()
 		}
 
 		// adding ghost boundary conditions
-		real qUp = bcs.reflectUp * qWithBC[1];
-		if (bcs.qxImposedUp > 0)
-		{
-			qUp = bcs.qxImposedUp;
-		}
+		qWithBC[0] = (bcs.qxImposedUp > 0) ? bcs.qxImposedUp : bcs.reflectUp * qWithBC[1];
+		qWithBC[simulationParameters.cells + 1] = (bcs.qxImposedDown > 0) ? bcs.qxImposedDown : bcs.reflectDown * qWithBC[simulationParameters.cells];
 
-		real qDown = bcs.reflectDown * qWithBC[simulationParameters.cells];
-		if (bcs.qxImposedDown > 0)
-		{
-			qDown = bcs.qxImposedDown;
-		}
+		hWithBC[0] = (bcs.hImposedUp > 0) ? bcs.hImposedUp : hWithBC[1];
+		hWithBC[simulationParameters.cells + 1] = (bcs.hImposedDown > 0) ? bcs.hImposedDown : hWithBC[simulationParameters.cells];
 
-		qWithBC[0] = qUp;
-		qWithBC[simulationParameters.cells + 1] = qDown; // recall there are cells + 2 elements inc BCs
-
-		real hUp = hWithBC[1];
-		if (bcs.hImposedUp > 0)
-		{
-			hUp = bcs.hImposedUp;
-		}
-
-		real hDown = hWithBC[simulationParameters.cells];
-		if (bcs.hImposedDown > 0)
-		{
-			hDown = bcs.hImposedDown;
-		}
-
-		hWithBC[0] = hUp;
-		hWithBC[simulationParameters.cells + 1] = hDown;
-
-		real zUp = zWithBC[1];
-		real zDown = zWithBC[simulationParameters.cells];
-
-		zWithBC[0] = zUp;
-		zWithBC[simulationParameters.cells + 1] = zDown;
+		zWithBC[0] = zWithBC[1];
+		zWithBC[simulationParameters.cells + 1] = zWithBC[simulationParameters.cells];
 
 		// extract upwind and downwind modes
 		real hWestUpwind = hWithBC[0];
@@ -206,15 +185,7 @@ int main()
 			real hMax = max(hLocal, hBackward);
 			hMax = max(hForward, hMax);
 
-			// dry[] hasn't been initialised so else statement also needed
-			if (hMax <= solverParameters.tolDry)
-			{
-				dry[i] = true;
-			}
-			else
-			{
-				dry[i] = false;
-			}
+			dry[i] = (hMax <= solverParameters.tolDry);
 		}
 
 		for (i = 0; i < simulationParameters.cells + 2; i++)
@@ -240,99 +211,139 @@ int main()
 
 		for (int i = 0; i < simulationParameters.cells + 1; i++)
 		{
-			// initialising velocity interface values
-			uWest[i] = uFaceValues(solverParameters, qWest[i], hWest[i]);
-			uEast[i] = uFaceValues(solverParameters, qEast[i], hEast[i]);
+			real zWest = etaWest[i] - hWest[i];
+			real zEast = etaEast[i] - hEast[i];
+			
+			real uWest = (hWest[i] <= solverParameters.tolDry) ? 0 : qWest[i] / hWest[i];
+			real uEast = (hEast[i] <= solverParameters.tolDry) ? 0 : qEast[i] / hEast[i];
 
-			// intermediate calculations
-			real a = etaWest[i] - hWest[i];
-			real b = etaEast[i] - hEast[i];
-			zStarIntermediate[i] = max(a, b);
-			a = etaWest[i] - zStarIntermediate[i];
-			b = etaEast[i] - zStarIntermediate[i];
+			real zIntermediate = max(zWest, zEast);
 
-			// positivity-preserving nodes
-			hWestStar[i] = max(C(0.0), a);
-			hEastStar[i] = max(C(0.0), b);
+			deltaWest[i] = max(C(0.0), -(etaWest[i] - zIntermediate));
+			deltaEast[i] = max(C(0.0), -(etaEast[i] - zIntermediate));
 
-			delta[i] = max(C(0.0), -a) + max(C(0.0), -b);
+			hWestStar[i] = max(C(0.0), etaWest[i] - zIntermediate);
+			qWestStar[i] = uWest * hWestStar[i];
 
-			qWestStar[i] = uWest[i] * hWestStar[i];
-			qEastStar[i] = uEast[i] * hEastStar[i];
+			hEastStar[i] = max(C(0.0), etaEast[i] - zIntermediate);
+			qEastStar[i] = uEast * hEastStar[i];
 
-			zStar[i] = zStarIntermediate[i] - delta[i];
+			zWestStar[i] = zIntermediate - deltaWest[i];
+			zEastStar[i] = zIntermediate - deltaEast[i];
 		}
 
 		// initialising numerical fluxes
-		fluxHLL(simulationParameters, solverParameters, hWestStar, hEastStar, qWestStar, qEastStar, uWest, uEast, massFlux, momentumFlux);
+		fluxHLL(simulationParameters, solverParameters, hWestStar, hEastStar, qWestStar, qEastStar, massFlux, momentumFlux);
 
 		for (int i = 0; i < simulationParameters.cells; i++)
 		{
 			// essentially 0th order projection but taking into account east/west locality
-			hBar[i] = (hEastStar[i] + hWestStar[i + 1]) / 2;
+			hBar[i] = (hWestStar[i + 1] + hEastStar[i]) / 2;
 
-			// first order projection
-			zBar[i] = (zStar[i + 1] - zStar[i]) / (2 * sqrt(C(3.0)));
+			// 1st order projection
+			zBar[i] = (zWestStar[i + 1] - zEastStar[i]) / (2 * sqrt(C(3.0)));
 		}
+
+		if (firstTimeStep)
+		{
+			ofstream arrays;
+
+			arrays.open("arrays.txt");
+
+			arrays << "xInt, qInt, hInt, zInt, qWest, hWest, etaWest, qEast, hEast, etaEast, "
+				"qWestStar, hWestStar, zWestStar, qEastStar, hEastStar, zEastStar, deltaWest, deltaEast, massFlux, momentumFlux" << endl;
+
+			for (int i = 0; i < simulationParameters.cells + 1; i++)
+			{
+				arrays << xInt[i] << "," << qInt[i] << "," << hInt[i] << "," << zInt[i] << "," 
+					<< qWest[i] << "," << hWest[i] << "," << etaWest[i] << "," << qEast[i] << "," << hEast[i] << "," << etaEast[i] << ","
+					<< qWestStar[i] << "," << hWestStar[i] << "," << zWestStar[i] << "," << qEastStar[i] << "," << hEastStar[i] << "," 
+					<< zEastStar[i] << "," << deltaWest[i] << "," << deltaEast[i] << ","
+					<< massFlux[i] << "," << momentumFlux[i] << endl;
+			}
+
+			arrays << endl;
+
+			arrays << "qWithBC, hWithBC, zWithBC, etaTemp, dry" << endl;
+
+			for (i = 0; i < simulationParameters.cells + 2; i++)
+			{
+				arrays << qWithBC[i] << "," << hWithBC[i] << "," << zWithBC[i] << "," << etaTemp[i] << "," << dry[i] << endl;
+			}
+
+			arrays << endl;
+
+			arrays << "hBar, zBar" << endl;
+
+			for (i = 0; i < simulationParameters.cells; i++)
+			{
+				arrays << hBar[i] << "," << zBar[i] << endl;
+			}
+
+			firstTimeStep = 0;
+		}
+
+
 
 		// FV1 operator increment, skip ghosts cells
 		for (i = 1; i < simulationParameters.cells + 1; i++)
 		{
 			// skip increment in dry cells
-			if (dry[i])
-			{
-				continue;
-			}
-			else
+			if (!dry[i])
 			{
 				real massIncrement = -(1 / dx) * (massFlux[i] - massFlux[i - 1]);
 				real momentumIncrement = -(1 / dx) * (momentumFlux[i] - momentumFlux[i - 1] + 2 * sqrt(C(3.0)) * solverParameters.g * hBar[i - 1] * zBar[i - 1]);
 
-				hWithBC[i] += dt * massIncrement;
-				qWithBC[i] += dt * momentumIncrement;
-			}
+				real a = momentumFlux[i] - momentumFlux[i - 1];
+				real b = 2 * sqrt(C(3.0)) * solverParameters.g * hBar[i - 1] * zBar[i - 1];
 
-			if (hWithBC[i] <= solverParameters.tolDry)
-			{
-				qWithBC[i] = 0;
+				hWithBC[i] += dt * massIncrement;
+				qWithBC[i] = hWithBC[i] <= solverParameters.tolDry ? 0 : qWithBC[i] + dt * momentumIncrement;
 			}
 		}
 
 		// CFL time step adjustment
 		dt = 1e9;
+		real totalMass = 0;
 
 		for (i = 1; i < simulationParameters.cells + 1; i++)
 		{
-			if (hWithBC[i] <= solverParameters.tolDry)
-			{
-				continue;
-			}
-			else
+			if (hWithBC[i] > solverParameters.tolDry)
 			{
 				real u = qWithBC[i] / hWithBC[i];
 				real dtCFL = solverParameters.CFL * dx / (abs(u) + sqrt(solverParameters.g * hWithBC[i]));
 				dt = min(dt, dtCFL);
 			}
+
+			totalMass += hWithBC[i] * dx;
 		}
 
-		step++;
+		//step++;
+
+		printf("Mass: %.17g, time: %f s\n", totalMass, timeNow);
+
 		
-		//printf("%f s\n", timeNow);
 	}
 
-	for (i = 1; i < simulationParameters.cells + 1; i++)
+	ofstream test;
+
+	test.open("FV1_data.txt");
+
+	test << "x,q,x,z,eta" << endl;
+
+	for (i = 0; i < simulationParameters.cells; i++)
 	{
-		printf("%0.2f\n", hWithBC[i] + zWithBC[i]);
+		test << (xInt[i] + xInt[i + 1]) / 2 << "," << qWithBC[i + 1] << "," << (xInt[i] + xInt[i + 1]) / 2 << "," << zWithBC[i + 1] << "," << hWithBC[i + 1] + zWithBC[i + 1] << endl;
 	}
 
-	printf("\n");
+	test.close();
 
 	// delete buffers
-	delete[] x_int;
+	delete[] xInt;
 
-	delete[] q_int;
-	delete[] h_int;
-	delete[] z_int;
+	delete[] qInt;
+	delete[] hInt;
+	delete[] zInt;
 
 	delete[] qWithBC;
 	delete[] hWithBC;
@@ -356,19 +367,22 @@ int main()
 	delete[] qEastStar;
 	delete[] hEastStar;
 
-	delete[] zStarIntermediate;
-	delete[] zStar;
+	delete[] zWestStar;
+	delete[] zEastStar;
 
-	delete[] uWest;
-	delete[] uEast;
-
-	delete[] delta;
+	delete[] deltaWest;
+	delete[] deltaEast;
 
 	delete[] massFlux;
 	delete[] momentumFlux;
 
 	delete[] hBar;
 	delete[] zBar;
+
+	clock_t end = clock();
+
+	real time = (real)(end - start) / CLOCKS_PER_SEC * C(1000.0);
+	printf("Execution time measured using clock(): %f ms\n", time);
 
 	return 0;
 }

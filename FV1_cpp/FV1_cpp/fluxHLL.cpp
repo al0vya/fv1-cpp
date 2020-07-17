@@ -1,65 +1,53 @@
 #include "fluxHLL.h"
 
-void fluxHLL(SimulationParameters simulationParameters, SolverParameters solverParameters, real* hWestStar, real* hEastStar, real* qWestStar, real* qEastStar, real* uWest, real* uEast, real* massFlux, real* momentumFlux)
+void fluxHLL(SimulationParameters simulationParameters, SolverParameters solverParameters, real* hWestStar, real* hEastStar, real* qWestStar, real* qEastStar, real* massFlux, real* momentumFlux)
 {
-	real aL, aR, hStar, uStar, aStar, sL, sR, massFL, massFR, momentumFL, momentumFR;
-
 	for (int i = 0; i < simulationParameters.cells + 1; i++)
 	{
 		if (hWestStar[i] <= solverParameters.tolDry && hEastStar[i] <= solverParameters.tolDry)
 		{
 			massFlux[i] = 0;
 			momentumFlux[i] = 0;
-			continue;
-		}
-
-		aL = sqrt(solverParameters.g * hWestStar[i]);
-		aR = sqrt(solverParameters.g * hEastStar[i]);
-
-		hStar = pow(((aL + aR) / 2 + (uWest[i] - uEast[i]) / 4), 2) / solverParameters.g;
-
-		uStar = (uWest[i] + uEast[i]) / 2 + aL - aR;
-
-		aStar = sqrt(solverParameters.g * hStar);
-
-		if (hWestStar[i] <= solverParameters.tolDry)
-		{
-			sL = uEast[i] - 2 * aR;
 		}
 		else
 		{
-			sL = min(uWest[i] - aL, uStar - aStar);
-		}
+			real uWest = (hWestStar[i] <= solverParameters.tolDry) ? 0 : qWestStar[i] / hWestStar[i];
+			real uEast = (hEastStar[i] <= solverParameters.tolDry) ? 0 : qEastStar[i] / hEastStar[i];
 
-		if (hEastStar[i] <= solverParameters.tolDry)
-		{
-			sR = uWest[i] + 2 * aL;
-		}
-		else
-		{
-			sR = max(uEast[i] + aR, uStar + aStar);
-		}
+			real aWest = sqrt(solverParameters.g * hWestStar[i]);
+			real aEast = sqrt(solverParameters.g * hEastStar[i]);
 
-		massFL = qWestStar[i];
-		massFR = qEastStar[i];
+			real hStar = pow(((aWest + aEast) / 2 + (uWest - uEast) / 4), 2) / solverParameters.g;
 
-		momentumFL = uWest[i] * qWestStar[i] + solverParameters.g / 2 * pow(hWestStar[i], 2);
-		momentumFR = uEast[i] * qEastStar[i] + solverParameters.g / 2 * pow(hEastStar[i], 2);
+			real uStar = (uWest + uEast) / 2 + aWest - aEast;
 
-		if (sL >= 0)
-		{
-			massFlux[i] = massFL;
-			momentumFlux[i] = momentumFL;
-		}
-		else if (sL < 0 && sR >= 0)
-		{
-			massFlux[i] = (sR * massFL - sL * massFR + sL * sR * (hEastStar[i] - hWestStar[i])) / (sR - sL);
-			momentumFlux[i] = (sR * momentumFL - sL * momentumFR + sL * sR * (qEastStar[i] - qWestStar[i])) / (sR - sL);
-		}
-		else if (sR < 0)
-		{
-			massFlux[i] = massFR;
-			momentumFlux[i] = momentumFR;
+			real aStar = sqrt(solverParameters.g * hStar);
+
+			real sWest = (hWestStar[i] <= solverParameters.tolDry) ? uEast - 2 * aEast : min(uWest - aWest, uStar - aStar);
+			real sEast = (hEastStar[i] <= solverParameters.tolDry) ? uWest + 2 * aWest : max(uEast + aEast, uStar - aStar);
+
+			real massWest = qWestStar[i];
+			real massEast = qEastStar[i];
+
+			real momentumWest = uWest * qWestStar[i] + 0.5 * solverParameters.g * pow(hWestStar[i], 2);
+			real momentumEast = uEast * qEastStar[i] + 0.5 * solverParameters.g * pow(hEastStar[i], 2);
+
+			if (sWest >= 0)
+			{
+				massFlux[i] = massWest;
+				momentumFlux[i] = momentumWest;
+			}
+			else if (sWest < 0 && sEast >= 0)
+			{
+				massFlux[i] = (sEast * massWest - sWest * massEast + sWest * sEast * (hEastStar[i] - hWestStar[i])) / (sEast - sWest);
+				momentumFlux[i] = (sEast * momentumWest - sWest * momentumEast + sWest * sEast * (qEastStar[i] - qWestStar[i])) / (sEast - sWest);
+			}
+			else if (sEast < 0)
+			{
+				massFlux[i] = massEast;
+				momentumFlux[i] = momentumEast;
+			}
 		}
 	}
+
 }
