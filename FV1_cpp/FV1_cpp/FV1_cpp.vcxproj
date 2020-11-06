@@ -141,23 +141,29 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bedDataConservative.cpp" />
-    <ClCompile Include="fluxHLLNew.cpp" />
     <ClCompile Include="frictionImplicit.cpp" />
-    <ClCompile Include="hInitial.cpp" />
+    <ClCompile Include="hInitialConservative.cpp" />
     <ClCompile Include="mainProgram.cpp" />
     <ClCompile Include="qInitial.cpp" />
     <ClCompile Include="fluxHLL.cpp" />
+    <ClCompile Include="hInitialOvertopping.cpp" />
+    <ClCompile Include="set_boundary_conditions_for_test_case.cpp" />
+    <ClCompile Include="set_simulation_parameters_for_test_case.cpp" />
+    <ClCompile Include="set_solver_parameters_for_test_case.cpp" />
     <ClCompile Include="uFaceValues.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bedDataConservative.h" />
     <ClInclude Include="BoundaryConditions.h" />
-    <ClInclude Include="fluxHLLNew.h" />
     <ClInclude Include="frictionImplicit.h" />
     <ClInclude Include="fluxHLL.h" />
-    <ClInclude Include="hInitial.h" />
+    <ClInclude Include="hInitialOvertopping.h" />
+    <ClInclude Include="hInitialConservative.h" />
     <ClInclude Include="qInitial.h" />
     <ClInclude Include="real.h" />
+    <ClInclude Include="set_boundary_conditions_for_test_case.h" />
+    <ClInclude Include="set_simulation_parameters_for_test_case.h" />
+    <ClInclude Include="set_solver_parameters_for_test_case.h" />
     <ClInclude Include="simulationParameters.h" />
     <ClInclude Include="SolverParameters.h" />
     <ClInclude Include="uFaceValues.h" />

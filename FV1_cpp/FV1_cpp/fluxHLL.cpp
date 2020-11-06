@@ -24,7 +24,7 @@ void fluxHLL(SimulationParameters simulationParameters, SolverParameters solverP
 			real aStar = sqrt(solverParameters.g * hStar);
 
 			real sWest = (hWestStar[i] <= solverParameters.tolDry) ? uEast - 2 * aEast : min(uWest - aWest, uStar - aStar);
-			real sEast = (hEastStar[i] <= solverParameters.tolDry) ? uWest + 2 * aWest : max(uEast + aEast, uStar - aStar);
+			real sEast = (hEastStar[i] <= solverParameters.tolDry) ? uWest + 2 * aWest : max(uEast + aEast, uStar + aStar);
 
 			real massWest = qWestStar[i];
 			real massEast = qEastStar[i];

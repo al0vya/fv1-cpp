@@ -1,5 +1,7 @@
 #pragma once
 
+#include "real.h"
+
 typedef struct SimulationParameters
 {
 	int cells;

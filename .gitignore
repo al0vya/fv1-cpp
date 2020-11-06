@@ -360,3 +360,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 *.txt
+*.png
+*.csv

@@ -10,52 +10,61 @@
 #include "SimulationParameters.h"
 #include "SolverParameters.h"
 #include "BoundaryConditions.h"
+#include "set_simulation_parameters_for_test_case.h"
+#include "set_solver_parameters_for_test_case.h"
+#include "set_boundary_conditions_for_test_case.h"
 #include "bedDataConservative.h"
+#include "hInitialConservative.h"
+#include "hInitialOvertopping.h"
 #include "qInitial.h"
-#include "hInitial.h"
 #include "frictionImplicit.h"
 #include "uFaceValues.h"
 #include "fluxHLL.h"
-#include "fluxHLLNew.h"
-
-using namespace std;
 
 int main()
 {
 	clock_t start = clock();
 
-	// quintessential for-loop index
+	// for-loop index
 	int i;
 
-	int step = 0;
+	int steps = 0;
 
-	SimulationParameters simulationParameters;
-	simulationParameters.cells = 512;
-	simulationParameters.xmin = 0;
-	simulationParameters.xmax = 50;
-	simulationParameters.simulationTime = C(100.0);
-	simulationParameters.manning = C(0.0);
+	std::cout << "Please enter a number between 1 and 6 to select a test case.\n"
+		         "1: Wet dam break\n"
+		         "2: Dry dam break\n"
+		         "3: Dry dam break with friction\n"
+		         "4: Wet lake-at-rest (C-property)\n"
+		         "5: Wet/dry lake-at-rest\n"
+		         "6: Building overtopping\n";
 
-	SolverParameters solverParameters;
-	solverParameters.CFL = C(0.33);
-	solverParameters.tolDry = C(1e-3);
-	solverParameters.g = C(9.80665);
+	int test_case_selection;
 
-	BoundaryConditions bcs;
-	bcs.hl = C(2.0);
-	bcs.hr = C(2.0);
+	std::cin >> test_case_selection;
 
-	bcs.ql = C(0.0);
-	bcs.qr = C(0.0);
+	if (!std::cin || test_case_selection > 6 || test_case_selection < 1)
+	{
+		std::cout << "Error: please rerun and enter a number between 1 and 6. Exiting program.\n";
 
-	bcs.reflectUp = C(1.0);
-	bcs.reflectDown = C(1.0);
+		return -1;
+	}
 
-	bcs.hImposedUp = C(0.0);
-	bcs.qxImposedUp = C(0.0);
+	std::cout << "Please enter the number of cells.\n";
 
-	bcs.hImposedDown = C(0.0);
-	bcs.qxImposedDown = C(0.0);
+	int number_of_cells;
+
+	std::cin >> number_of_cells;
+
+	if (!std::cin || number_of_cells < 1)
+	{
+		std::cout << "Error: please rerun and enter a integer value. Exiting program.\n";
+
+		return -1;
+	}
+
+	SimulationParameters simulationParameters = set_simulation_parameters_for_test_case(test_case_selection, number_of_cells);
+	SolverParameters solverParameters = set_solver_parameters_for_test_case();
+	BoundaryConditions bcs = set_boundary_conditions_for_test_case(test_case_selection);
 
 	// coarsest cell size
 	real dx = (simulationParameters.xmax - simulationParameters.xmin) / simulationParameters.cells;
@@ -75,11 +84,34 @@ int main()
 	real* zInt = new real[simulationParameters.cells + 1];
 
 	// initial interface values
-	for (i = 0; i < simulationParameters.cells + 1; i++)
+	switch (test_case_selection)
 	{
-		zInt[i] = bedDataConservative(xInt[i]);
-		hInt[i] = hInitial(bcs, zInt[i], xInt[i]);
-		qInt[i] = qInitial(bcs, xInt[i]);
+	case 1: case 2: case 3:
+		for (i = 0; i < simulationParameters.cells + 1; i++)
+		{
+			zInt[i] = 0;
+			hInt[i] = hInitialOvertopping(bcs, zInt[i], xInt[i]);
+			qInt[i] = qInitial(bcs, xInt[i]);
+		}
+		break;
+	case 4: case 5:
+		for (i = 0; i < simulationParameters.cells + 1; i++)
+		{
+			zInt[i] = bedDataConservative(xInt[i]);
+			hInt[i] = hInitialConservative(bcs, zInt[i], xInt[i]);
+			qInt[i] = qInitial(bcs, xInt[i]);
+		}
+		break;
+	case 6:
+		for (i = 0; i < simulationParameters.cells + 1; i++)
+		{
+			zInt[i] = bedDataConservative(xInt[i]);
+			hInt[i] = hInitialOvertopping(bcs, zInt[i], xInt[i]);
+			qInt[i] = qInitial(bcs, xInt[i]);
+		}
+		break;
+	default:
+		break;
 	}
 
 	// allocate buffers for flow modes with ghost BCs
@@ -135,6 +167,15 @@ int main()
 
 	int firstTimeStep = 1;
 
+	// file stream for recording cumulative clock time vs sim time
+	ofstream data;
+
+	data.open("clock_time_vs_sim_time.csv");
+
+	data.precision(15);
+
+	data << "sim_time,clock_time" << std::endl;
+
 	while (timeNow < simulationParameters.simulationTime)
 	{
 		timeNow += dt;
@@ -155,13 +196,6 @@ int main()
 
 		zWithBC[0] = zWithBC[1];
 		zWithBC[simulationParameters.cells + 1] = zWithBC[simulationParameters.cells];
-
-		// extract upwind and downwind modes
-		real hWestUpwind = hWithBC[0];
-		real qWestUpwind = qWithBC[0];
-
-		real hEastDownwind = hWithBC[simulationParameters.cells + 1];
-		real qEastDownwind = qWithBC[simulationParameters.cells + 1];
 
 		if (simulationParameters.manning > 0)
 		{
@@ -206,16 +240,16 @@ int main()
 		}
 
 		// correcting downwind and upwind eta values
-		etaEast[simulationParameters.cells] = etaTemp[simulationParameters.cells] - hWithBC[simulationParameters.cells] + hEastDownwind;
-		etaWest[0] = etaTemp[1] - hWithBC[1] + hWestUpwind;
+		etaEast[simulationParameters.cells] = etaTemp[simulationParameters.cells] - hWithBC[simulationParameters.cells] + hWithBC[simulationParameters.cells + 1];
+		etaWest[0] = etaTemp[1] - hWithBC[1] + hWithBC[0];
 
 		for (int i = 0; i < simulationParameters.cells + 1; i++)
 		{
-			real zWest = etaWest[i] - hWest[i];
-			real zEast = etaEast[i] - hEast[i];
-			
 			real uWest = (hWest[i] <= solverParameters.tolDry) ? 0 : qWest[i] / hWest[i];
 			real uEast = (hEast[i] <= solverParameters.tolDry) ? 0 : qEast[i] / hEast[i];
+
+			real zWest = etaWest[i] - hWest[i];
+			real zEast = etaEast[i] - hEast[i];
 
 			real zIntermediate = max(zWest, zEast);
 
@@ -244,47 +278,6 @@ int main()
 			zBar[i] = (zWestStar[i + 1] - zEastStar[i]) / (2 * sqrt(C(3.0)));
 		}
 
-		if (firstTimeStep)
-		{
-			ofstream arrays;
-
-			arrays.open("arrays.txt");
-
-			arrays << "xInt, qInt, hInt, zInt, qWest, hWest, etaWest, qEast, hEast, etaEast, "
-				"qWestStar, hWestStar, zWestStar, qEastStar, hEastStar, zEastStar, deltaWest, deltaEast, massFlux, momentumFlux" << endl;
-
-			for (int i = 0; i < simulationParameters.cells + 1; i++)
-			{
-				arrays << xInt[i] << "," << qInt[i] << "," << hInt[i] << "," << zInt[i] << "," 
-					<< qWest[i] << "," << hWest[i] << "," << etaWest[i] << "," << qEast[i] << "," << hEast[i] << "," << etaEast[i] << ","
-					<< qWestStar[i] << "," << hWestStar[i] << "," << zWestStar[i] << "," << qEastStar[i] << "," << hEastStar[i] << "," 
-					<< zEastStar[i] << "," << deltaWest[i] << "," << deltaEast[i] << ","
-					<< massFlux[i] << "," << momentumFlux[i] << endl;
-			}
-
-			arrays << endl;
-
-			arrays << "qWithBC, hWithBC, zWithBC, etaTemp, dry" << endl;
-
-			for (i = 0; i < simulationParameters.cells + 2; i++)
-			{
-				arrays << qWithBC[i] << "," << hWithBC[i] << "," << zWithBC[i] << "," << etaTemp[i] << "," << dry[i] << endl;
-			}
-
-			arrays << endl;
-
-			arrays << "hBar, zBar" << endl;
-
-			for (i = 0; i < simulationParameters.cells; i++)
-			{
-				arrays << hBar[i] << "," << zBar[i] << endl;
-			}
-
-			firstTimeStep = 0;
-		}
-
-
-
 		// FV1 operator increment, skip ghosts cells
 		for (i = 1; i < simulationParameters.cells + 1; i++)
 		{
@@ -298,13 +291,13 @@ int main()
 				real b = 2 * sqrt(C(3.0)) * solverParameters.g * hBar[i - 1] * zBar[i - 1];
 
 				hWithBC[i] += dt * massIncrement;
-				qWithBC[i] = hWithBC[i] <= solverParameters.tolDry ? 0 : qWithBC[i] + dt * momentumIncrement;
+				qWithBC[i] = (hWithBC[i] <= solverParameters.tolDry) ? 0 : qWithBC[i] + dt * momentumIncrement;
 			}
 		}
 
-		// CFL time step adjustment
+		// CFL time step adjustmenttotal_mass 
 		dt = 1e9;
-		real totalMass = 0;
+		real total_mass = 0;
 
 		for (i = 1; i < simulationParameters.cells + 1; i++)
 		{
@@ -315,25 +308,42 @@ int main()
 				dt = min(dt, dtCFL);
 			}
 
-			totalMass += hWithBC[i] * dx;
+			total_mass  += hWithBC[i] * dx;
 		}
 
-		//step++;
+		steps++;
 
-		printf("Mass: %.17g, time: %f s\n", totalMass, timeNow);
+		// recording cumulative clock time against sim time
+		if (steps % 100 == 0)
+		{
+			clock_t current = clock();
+			real time = (real)(current - start) / CLOCKS_PER_SEC * C(1000.0);
 
-		
+			data << timeNow << "," << time << endl;
+		}
+
+		printf("Mass: %.17g, time step: %f, time: %f s\n", total_mass , dt, timeNow);
 	}
 
+	
+	// ensures recording of final clock time if steps % 100 != 0
+	clock_t current = clock();
+	real time = (real)(current - start) / CLOCKS_PER_SEC * C(1000.0);
+
+	data << timeNow << "," << time << endl;
+
+	data.close();
+
+	// seperate file stream for x, q, max(eta, h) and z
 	ofstream test;
 
-	test.open("FV1_data.txt");
+	test.open("FV1_data.csv");
 
-	test << "x,q,x,z,eta" << endl;
+	test << "x,q,z,eta" << endl;
 
 	for (i = 0; i < simulationParameters.cells; i++)
 	{
-		test << (xInt[i] + xInt[i + 1]) / 2 << "," << qWithBC[i + 1] << "," << (xInt[i] + xInt[i + 1]) / 2 << "," << zWithBC[i + 1] << "," << hWithBC[i + 1] + zWithBC[i + 1] << endl;
+		test << (xInt[i] + xInt[i + 1]) / 2 << "," << qWithBC[i + 1] << "," << zWithBC[i + 1] << "," << max(zWithBC[i + 1], hWithBC[i + 1] + zWithBC[i + 1]) << endl;
 	}
 
 	test.close();
@@ -379,9 +389,10 @@ int main()
 	delete[] hBar;
 	delete[] zBar;
 
+	// print execution time to console 
 	clock_t end = clock();
 
-	real time = (real)(end - start) / CLOCKS_PER_SEC * C(1000.0);
+	real end_time = (real)(end - start) / CLOCKS_PER_SEC * C(1000.0);
 	printf("Execution time measured using clock(): %f ms\n", time);
 
 	return 0;
