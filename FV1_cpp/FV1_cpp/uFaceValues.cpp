@@ -2,7 +2,7 @@
 
 real uFaceValues(SolverParameters solverParameters, real qFace, real hFace)
 {
-	if (hFace <= solverParameters.tolDry)
+	if (hFace <= solverParameters.tol_dry)
 	{
 		return 0;
 	}

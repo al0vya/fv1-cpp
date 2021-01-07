@@ -4,7 +4,7 @@ real frictionImplicit(SimulationParameters simulationParameters, SolverParameter
 {
 	real u, Sf, D, Cf;
 
-	if (h > solverParameters.tolDry && abs(q) > solverParameters.tolDry)
+	if (h > solverParameters.tol_dry && abs(q) > solverParameters.tol_dry)
 	{
 		u = q / h;
 

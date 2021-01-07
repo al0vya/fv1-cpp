@@ -4,7 +4,7 @@
 typedef struct SolverParameters
 {
 	real CFL;
-	real tolDry;
+	real tol_dry;
 	real g;
 
 } SolverParameters;

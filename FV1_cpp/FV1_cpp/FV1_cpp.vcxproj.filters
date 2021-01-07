@@ -48,6 +48,15 @@
     <ClCompile Include="set_boundary_conditions_for_test_case.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="set_error_threshold_epsilon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="set_test_case.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="set_num_cells.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="real.h">
@@ -90,6 +99,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="set_solver_parameters_for_test_case.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="set_error_threshold_epsilon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="set_test_case.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="set_num_cells.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
