@@ -156,12 +156,17 @@
     <ClCompile Include="uFaceValues.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AssembledSolution.h" />
+    <ClInclude Include="BarValues.h" />
     <ClInclude Include="bedDataConservative.h" />
     <ClInclude Include="BoundaryConditions.h" />
+    <ClInclude Include="FaceValues.h" />
+    <ClInclude Include="Fluxes.h" />
     <ClInclude Include="frictionImplicit.h" />
     <ClInclude Include="fluxHLL.h" />
     <ClInclude Include="hInitialOvertopping.h" />
     <ClInclude Include="hInitialConservative.h" />
+    <ClInclude Include="NodalValues.h" />
     <ClInclude Include="qInitial.h" />
     <ClInclude Include="real.h" />
     <ClInclude Include="set_boundary_conditions_for_test_case.h" />
@@ -172,6 +177,7 @@
     <ClInclude Include="set_test_case.h" />
     <ClInclude Include="simulationParameters.h" />
     <ClInclude Include="SolverParameters.h" />
+    <ClInclude Include="StarValues.h" />
     <ClInclude Include="uFaceValues.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

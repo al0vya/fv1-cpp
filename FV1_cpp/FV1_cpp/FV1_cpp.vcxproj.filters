@@ -110,5 +110,23 @@
     <ClInclude Include="set_num_cells.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AssembledSolution.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BarValues.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FaceValues.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Fluxes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StarValues.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NodalValues.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
