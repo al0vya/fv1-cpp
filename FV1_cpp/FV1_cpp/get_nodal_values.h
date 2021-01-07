@@ -12,5 +12,6 @@ void get_nodal_values
 	NodalValues&          nodal_vals,
 	SimulationParameters& sim_params,
 	BoundaryConditions&   bcs,
+	real&                 dx,
 	int                   test_case
 );

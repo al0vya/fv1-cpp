@@ -9,14 +9,14 @@ typedef struct BoundaryConditions
 	real ql;
 	real qr;
 
-	real reflectUp;
-	real reflectDown;
+	real reflect_up;
+	real reflect_down;
 
-	real hImposedUp;
-	real qxImposedUp;
+	real h_imposed_up;
+	real q_imposed_up;
 
-	real hImposedDown;
-	real qxImposedDown;
+	real h_imposed_down;
+	real q_imposed_down;
 
 } BoundaryConditions;
 

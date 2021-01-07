@@ -21,9 +21,6 @@
     <ClCompile Include="bedDataConservative.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="uFaceValues.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="fluxHLL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -90,6 +87,18 @@
     <ClCompile Include="friction_implicit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="get_nodal_values.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="get_modal_values.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="add_ghost_cells.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="friction_update.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="real.h">
@@ -102,9 +111,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SolverParameters.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="uFaceValues.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fluxHLL.h">
@@ -192,6 +198,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="friction_implicit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="get_nodal_values.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="get_modal_values.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="add_ghost_cells.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="friction_update.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

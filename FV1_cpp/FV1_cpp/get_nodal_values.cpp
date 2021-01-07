@@ -5,9 +5,12 @@ void get_nodal_values
 	NodalValues&          nodal_vals,
 	SimulationParameters& sim_params,
 	BoundaryConditions&   bcs,
+	real&                 dx,
 	int                   test_case
 )
 {
+	for (int i = 0; i < sim_params.cells + 1; i++) nodal_vals.x[i] = sim_params.xmin + i * dx;
+	
 	switch (test_case)
 	{
 	case 1:

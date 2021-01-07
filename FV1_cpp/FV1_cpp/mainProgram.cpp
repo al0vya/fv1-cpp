@@ -8,11 +8,11 @@
 
 #include "real.h"
 
-// Algorithm steps
+// Solver steps
 #include "get_nodal_values.h"
-
-#include "friction_implicit.h"
-#include "uFaceValues.h"
+#include "get_modal_values.h"
+#include "add_ghost_cells.h"
+#include "friction_update.h"
 #include "fluxHLL.h"
 
 // Structures
@@ -87,43 +87,35 @@ int main()
 	real* delta_west = new real[sim_params.cells + 1];
 	real* delta_east = new real[sim_params.cells + 1];
 
+	// Variables
+	real dx       = (sim_params.xmax - sim_params.xmin) / sim_params.cells;
+	real time_now = 0;
+	real dt       = C(1e-3);
+	
+	// File i/o
+	ofstream data; // for recording cumulative clock time vs sim time
+
+	data.open("clock_time_vs_sim_time.csv");
+	data.precision(15);
+	data << "sim_time,clock_time" << std::endl;
+
 	// =========================================================== //
 	
-	// coarsest cell size
-	real dx = (sim_params.xmax - sim_params.xmin) / sim_params.cells;
-
-	// initialise baseline mesh
-	for (int i = 0; i < sim_params.cells + 1; i++) nodal_vals.x[i] = sim_params.xmin + i * dx;
-
 	get_nodal_values
 	(
 		nodal_vals, 
 		sim_params, 
-		bcs, 
+		bcs,
+		dx,
 		test_case
 	);
 
-	// project to find the modes
-	for (int i = 1; i < sim_params.cells + 1; i++)
-	{
-		assem_sol.q_BC[i] = (nodal_vals.q[i - 1] + nodal_vals.q[i]) / 2;
-		assem_sol.h_BC[i] = (nodal_vals.h[i - 1] + nodal_vals.h[i]) / 2;
-		assem_sol.z_BC[i] = (nodal_vals.z[i - 1] + nodal_vals.z[i]) / 2;
-	}	
-
-	real time_now = 0;
-	real dt = C(1e-3);
-
-	int firstTimeStep = 1;
-
-	// file stream for recording cumulative clock time vs sim time
-	ofstream data;
-
-	data.open("clock_time_vs_sim_time.csv");
-
-	data.precision(15);
-
-	data << "sim_time,clock_time" << std::endl;
+	get_modal_values
+	(
+		assem_sol, 
+		nodal_vals, 
+		sim_params
+	);
 
 	while (time_now < sim_params.simulationTime)
 	{
@@ -136,23 +128,14 @@ int main()
 			time_now += dt;
 		}
 
-		// adding ghost boundary conditions
-		assem_sol.q_BC[0] = (bcs.qxImposedUp > 0) ? bcs.qxImposedUp : bcs.reflectUp * assem_sol.q_BC[1];
-		assem_sol.q_BC[sim_params.cells + 1] = (bcs.qxImposedDown > 0) ? bcs.qxImposedDown : bcs.reflectDown * assem_sol.q_BC[sim_params.cells];
+		add_ghost_cells
+		(
+			assem_sol, 
+			bcs, 
+			sim_params
+		);
 
-		assem_sol.h_BC[0] = (bcs.hImposedUp > 0) ? bcs.hImposedUp : assem_sol.h_BC[1];
-		assem_sol.h_BC[sim_params.cells + 1] = (bcs.hImposedDown > 0) ? bcs.hImposedDown : assem_sol.h_BC[sim_params.cells];
-
-		assem_sol.z_BC[0] = assem_sol.z_BC[1];
-		assem_sol.z_BC[sim_params.cells + 1] = assem_sol.z_BC[sim_params.cells];
-
-		if (sim_params.manning > 0)
-		{
-			for (int i = 1; i < sim_params.cells + 1; i++)
-			{
-				assem_sol.q_BC[i] += friction_implicit(sim_params, solver_params, dt, assem_sol.h_BC[i], assem_sol.q_BC[i]);
-			}
-		}
+		if (sim_params.manning > 0) friction_update(assem_sol, sim_params, solver_params, dt);
 
 		// ghost cells are always 0 i.e. false/wet
 		dry[0] = false;
@@ -171,10 +154,7 @@ int main()
 			dry[i] = (hMax <= solver_params.tol_dry);
 		}
 
-		for (int i = 0; i < sim_params.cells + 2; i++)
-		{
-			etaTemp[i] = assem_sol.h_BC[i] + assem_sol.z_BC[i];
-		}
+		for (int i = 0; i < sim_params.cells + 2; i++) etaTemp[i] = assem_sol.h_BC[i] + assem_sol.z_BC[i];
 
 		// initialising interface values
 		for (int i = 0; i < sim_params.cells + 1; i++)
@@ -274,7 +254,6 @@ int main()
 		printf("Mass: %.17g, time step: %f, time: %f s\n", total_mass , dt, time_now);
 	}
 
-	
 	// ensures recording of final clock time if steps % 100 != 0
 	clock_t current = clock();
 	real time = (real)(current - start) / CLOCKS_PER_SEC * C(1000.0);

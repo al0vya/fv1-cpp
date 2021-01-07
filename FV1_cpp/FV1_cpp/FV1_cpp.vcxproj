@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="add_ghost_cells.cpp" />
     <ClCompile Include="bedDataConservative.cpp" />
     <ClCompile Include="free_assembled_solution.cpp" />
     <ClCompile Include="free_bar_values.cpp" />
@@ -148,6 +149,9 @@
     <ClCompile Include="free_nodal_values.cpp" />
     <ClCompile Include="free_star_values.cpp" />
     <ClCompile Include="friction_implicit.cpp" />
+    <ClCompile Include="friction_update.cpp" />
+    <ClCompile Include="get_modal_values.cpp" />
+    <ClCompile Include="get_nodal_values.cpp" />
     <ClCompile Include="h_init_c_property.cpp" />
     <ClCompile Include="mainProgram.cpp" />
     <ClCompile Include="malloc_assembled_solution.cpp" />
@@ -164,9 +168,9 @@
     <ClCompile Include="set_simulation_parameters.cpp" />
     <ClCompile Include="set_solver_parameters.cpp" />
     <ClCompile Include="set_test_case.cpp" />
-    <ClCompile Include="uFaceValues.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="add_ghost_cells.h" />
     <ClInclude Include="AssembledSolution.h" />
     <ClInclude Include="BarValues.h" />
     <ClInclude Include="bed_data_c_property.h" />
@@ -181,6 +185,9 @@
     <ClInclude Include="free_star_values.h" />
     <ClInclude Include="friction_implicit.h" />
     <ClInclude Include="fluxHLL.h" />
+    <ClInclude Include="friction_update.h" />
+    <ClInclude Include="get_modal_values.h" />
+    <ClInclude Include="get_nodal_values.h" />
     <ClInclude Include="h_init_overtop.h" />
     <ClInclude Include="h_init_c_property.h" />
     <ClInclude Include="malloc_assembled_solution.h" />
@@ -200,7 +207,6 @@
     <ClInclude Include="simulationParameters.h" />
     <ClInclude Include="SolverParameters.h" />
     <ClInclude Include="StarValues.h" />
-    <ClInclude Include="uFaceValues.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
