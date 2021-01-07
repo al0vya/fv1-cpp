@@ -150,10 +150,16 @@
     <ClCompile Include="free_star_values.cpp" />
     <ClCompile Include="friction_implicit.cpp" />
     <ClCompile Include="friction_update.cpp" />
+    <ClCompile Include="fv1_operator.cpp" />
+    <ClCompile Include="get_bar_values.cpp" />
+    <ClCompile Include="get_dt_CFL.cpp" />
+    <ClCompile Include="get_face_values.cpp" />
     <ClCompile Include="get_modal_values.cpp" />
     <ClCompile Include="get_nodal_values.cpp" />
+    <ClCompile Include="get_positivity_preserving_nodes.cpp" />
+    <ClCompile Include="get_wet_dry_cells.cpp" />
     <ClCompile Include="h_init_c_property.cpp" />
-    <ClCompile Include="mainProgram.cpp" />
+    <ClCompile Include="MAIN.cpp" />
     <ClCompile Include="malloc_assembled_solution.cpp" />
     <ClCompile Include="malloc_bar_values.cpp" />
     <ClCompile Include="malloc_face_values.cpp" />
@@ -168,6 +174,7 @@
     <ClCompile Include="set_simulation_parameters.cpp" />
     <ClCompile Include="set_solver_parameters.cpp" />
     <ClCompile Include="set_test_case.cpp" />
+    <ClCompile Include="write_solution_to_file.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="add_ghost_cells.h" />
@@ -186,8 +193,14 @@
     <ClInclude Include="friction_implicit.h" />
     <ClInclude Include="fluxHLL.h" />
     <ClInclude Include="friction_update.h" />
+    <ClInclude Include="fv1_operator.h" />
+    <ClInclude Include="get_bar_values.h" />
+    <ClInclude Include="get_dt_CFL.h" />
+    <ClInclude Include="get_face_values.h" />
     <ClInclude Include="get_modal_values.h" />
     <ClInclude Include="get_nodal_values.h" />
+    <ClInclude Include="get_positivity_preserving_nodes.h" />
+    <ClInclude Include="get_wet_dry_cells.h" />
     <ClInclude Include="h_init_overtop.h" />
     <ClInclude Include="h_init_c_property.h" />
     <ClInclude Include="malloc_assembled_solution.h" />
@@ -207,6 +220,7 @@
     <ClInclude Include="simulationParameters.h" />
     <ClInclude Include="SolverParameters.h" />
     <ClInclude Include="StarValues.h" />
+    <ClInclude Include="write_solution_to_file.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

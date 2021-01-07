@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="mainProgram.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="bedDataConservative.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -97,6 +94,30 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="friction_update.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MAIN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="get_wet_dry_cells.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="get_face_values.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="get_positivity_preserving_nodes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="get_bar_values.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fv1_operator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="get_dt_CFL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="write_solution_to_file.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -210,6 +231,27 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="friction_update.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="get_wet_dry_cells.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="get_face_values.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="get_positivity_preserving_nodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="get_bar_values.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fv1_operator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="get_dt_CFL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="write_solution_to_file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
