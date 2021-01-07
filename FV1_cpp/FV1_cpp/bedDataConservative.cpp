@@ -1,6 +1,6 @@
-#include "bedDataConservative.h"
+#include "bed_data_c_property.h"
 
-real bedDataConservative(real x_int)
+real bed_data_c_property(real x_int)
 {
 	real a = x_int;
 	real b;

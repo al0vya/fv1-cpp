@@ -6,7 +6,7 @@ void malloc_assembled_solution
 	SimulationParameters& sim_params
 )
 {
-	assem_sol.qWithBC = new real[sim_params.cells + 2];
-	assem_sol.hWithBC = new real[sim_params.cells + 2];
-	assem_sol.zWithBC = new real[sim_params.cells + 2];
+	assem_sol.q_BC = new real[sim_params.cells + 2];
+	assem_sol.h_BC = new real[sim_params.cells + 2];
+	assem_sol.z_BC= new real[sim_params.cells + 2];
 }

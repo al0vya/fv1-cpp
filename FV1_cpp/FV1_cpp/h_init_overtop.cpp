@@ -1,6 +1,6 @@
-#include "hInitialOvertopping.h"
+#include "h_init_overtop.h"
 
-real hInitialOvertopping(BoundaryConditions bcs, real z_int, real x_int)
+real h_init_overtop(BoundaryConditions bcs, real z_int, real x_int)
 {
 	real etaWest = bcs.hl;
 	real etaEast = bcs.hr;

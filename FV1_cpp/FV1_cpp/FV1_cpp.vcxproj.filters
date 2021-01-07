@@ -21,22 +21,10 @@
     <ClCompile Include="bedDataConservative.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="qInitial.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="frictionImplicit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="uFaceValues.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="fluxHLL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="hInitialConservative.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="hInitialOvertopping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="set_error_threshold_epsilon.cpp">
@@ -93,6 +81,15 @@
     <ClCompile Include="free_bar_values.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="h_init_c_property.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="h_init_overtop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="friction_implicit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="real.h">
@@ -107,25 +104,10 @@
     <ClInclude Include="SolverParameters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="bedDataConservative.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="qInitial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="frictionImplicit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="uFaceValues.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fluxHLL.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hInitialOvertopping.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hInitialConservative.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="set_error_threshold_epsilon.h">
@@ -198,6 +180,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="free_bar_values.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="h_init_c_property.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bed_data_c_property.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="h_init_overtop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="friction_implicit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

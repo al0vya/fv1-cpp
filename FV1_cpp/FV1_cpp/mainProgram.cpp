@@ -7,27 +7,31 @@
 #include <fstream>
 
 #include "real.h"
+
+// Algorithm steps
+#include "get_nodal_values.h"
+
+#include "friction_implicit.h"
+#include "uFaceValues.h"
+#include "fluxHLL.h"
+
+// Structures
 #include "SimulationParameters.h"
 #include "SolverParameters.h"
 #include "BoundaryConditions.h"
-#include "set_simulation_parameters.h"
-#include "set_solver_parameters.h"
-#include "set_boundary_conditions.h"
-#include "set_num_cells.h"
-#include "set_test_case.h"
-#include "bedDataConservative.h"
-#include "hInitialConservative.h"
-#include "hInitialOvertopping.h"
-#include "qInitial.h"
-#include "frictionImplicit.h"
-#include "uFaceValues.h"
-#include "fluxHLL.h"
 #include "AssembledSolution.h"
 #include "BarValues.h"
 #include "Fluxes.h"
 #include "FaceValues.h"
 #include "NodalValues.h"
 #include "StarValues.h"
+
+// Solver/simulation setters
+#include "set_simulation_parameters.h"
+#include "set_solver_parameters.h"
+#include "set_boundary_conditions.h"
+#include "set_num_cells.h"
+#include "set_test_case.h"
 
 // Memory (de)allocators
 #include "malloc_assembled_solution.h"
@@ -47,7 +51,7 @@ int main()
 {
 	int steps = 0;
 
-	int test_case_selection = set_test_case();
+	int test_case = set_test_case();
 	int num_cells = set_num_cells();
 
 	clock_t start = clock();
@@ -57,9 +61,9 @@ int main()
 	// =========================================================== //
 
 	// Structures
-	SimulationParameters sim_params    = set_simulation_parameters(test_case_selection, num_cells);
+	SimulationParameters sim_params    = set_simulation_parameters(test_case, num_cells);
 	SolverParameters     solver_params = set_solver_parameters();
-	BoundaryConditions   bcs           = set_boundary_conditions(test_case_selection);
+	BoundaryConditions   bcs           = set_boundary_conditions(test_case);
 
 	NodalValues       nodal_vals;
 	AssembledSolution assem_sol;
@@ -80,8 +84,8 @@ int main()
 
 	real* etaTemp = new real[sim_params.cells + 2];
 
-	real* deltaWest = new real[sim_params.cells + 1];
-	real* deltaEast = new real[sim_params.cells + 1];
+	real* delta_west = new real[sim_params.cells + 1];
+	real* delta_east = new real[sim_params.cells + 1];
 
 	// =========================================================== //
 	
@@ -91,49 +95,23 @@ int main()
 	// initialise baseline mesh
 	for (int i = 0; i < sim_params.cells + 1; i++) nodal_vals.x[i] = sim_params.xmin + i * dx;
 
-	// initial interface values
-	switch (test_case_selection)
-	{
-	case 1:
-	case 2:
-	case 3:
-		for (int i = 0; i < sim_params.cells + 1; i++)
-		{
-			nodal_vals.z[i] = 0;
-			nodal_vals.h[i] = hInitialOvertopping(bcs, nodal_vals.z[i], nodal_vals.x[i]);
-			nodal_vals.q[i] = qInitial(bcs, nodal_vals.x[i]);
-		}
-		break;
-	case 4:
-	case 5:
-		for (int i = 0; i < sim_params.cells + 1; i++)
-		{
-			nodal_vals.z[i] = bedDataConservative(nodal_vals.x[i]);
-			nodal_vals.h[i] = hInitialConservative(bcs, nodal_vals.z[i], nodal_vals.x[i]);
-			nodal_vals.q[i] = qInitial(bcs, nodal_vals.x[i]);
-		}
-		break;
-	case 6:
-		for (int i = 0; i < sim_params.cells + 1; i++)
-		{
-			nodal_vals.z[i] = bedDataConservative(nodal_vals.x[i]);
-			nodal_vals.h[i] = hInitialOvertopping(bcs, nodal_vals.z[i], nodal_vals.x[i]);
-			nodal_vals.q[i] = qInitial(bcs, nodal_vals.x[i]);
-		}
-		break;
-	default:
-		break;
-	}
+	get_nodal_values
+	(
+		nodal_vals, 
+		sim_params, 
+		bcs, 
+		test_case
+	);
 
 	// project to find the modes
 	for (int i = 1; i < sim_params.cells + 1; i++)
 	{
-		assem_sol.qWithBC[i] = (nodal_vals.q[i - 1] + nodal_vals.q[i]) / 2;
-		assem_sol.hWithBC[i] = (nodal_vals.h[i - 1] + nodal_vals.h[i]) / 2;
-		assem_sol.zWithBC[i] = (nodal_vals.z[i - 1] + nodal_vals.z[i]) / 2;
+		assem_sol.q_BC[i] = (nodal_vals.q[i - 1] + nodal_vals.q[i]) / 2;
+		assem_sol.h_BC[i] = (nodal_vals.h[i - 1] + nodal_vals.h[i]) / 2;
+		assem_sol.z_BC[i] = (nodal_vals.z[i - 1] + nodal_vals.z[i]) / 2;
 	}	
 
-	real timeNow = 0;
+	real time_now = 0;
 	real dt = C(1e-3);
 
 	int firstTimeStep = 1;
@@ -147,32 +125,32 @@ int main()
 
 	data << "sim_time,clock_time" << std::endl;
 
-	while (timeNow < sim_params.simulationTime)
+	while (time_now < sim_params.simulationTime)
 	{
-		timeNow += dt;
+		time_now += dt;
 		
-		if (timeNow - sim_params.simulationTime > 0)
+		if (time_now - sim_params.simulationTime > 0)
 		{
-			timeNow -= dt;
-			dt = sim_params.simulationTime - timeNow;
-			timeNow += dt;
+			time_now -= dt;
+			dt = sim_params.simulationTime - time_now;
+			time_now += dt;
 		}
 
 		// adding ghost boundary conditions
-		assem_sol.qWithBC[0] = (bcs.qxImposedUp > 0) ? bcs.qxImposedUp : bcs.reflectUp * assem_sol.qWithBC[1];
-		assem_sol.qWithBC[sim_params.cells + 1] = (bcs.qxImposedDown > 0) ? bcs.qxImposedDown : bcs.reflectDown * assem_sol.qWithBC[sim_params.cells];
+		assem_sol.q_BC[0] = (bcs.qxImposedUp > 0) ? bcs.qxImposedUp : bcs.reflectUp * assem_sol.q_BC[1];
+		assem_sol.q_BC[sim_params.cells + 1] = (bcs.qxImposedDown > 0) ? bcs.qxImposedDown : bcs.reflectDown * assem_sol.q_BC[sim_params.cells];
 
-		assem_sol.hWithBC[0] = (bcs.hImposedUp > 0) ? bcs.hImposedUp : assem_sol.hWithBC[1];
-		assem_sol.hWithBC[sim_params.cells + 1] = (bcs.hImposedDown > 0) ? bcs.hImposedDown : assem_sol.hWithBC[sim_params.cells];
+		assem_sol.h_BC[0] = (bcs.hImposedUp > 0) ? bcs.hImposedUp : assem_sol.h_BC[1];
+		assem_sol.h_BC[sim_params.cells + 1] = (bcs.hImposedDown > 0) ? bcs.hImposedDown : assem_sol.h_BC[sim_params.cells];
 
-		assem_sol.zWithBC[0] = assem_sol.zWithBC[1];
-		assem_sol.zWithBC[sim_params.cells + 1] = assem_sol.zWithBC[sim_params.cells];
+		assem_sol.z_BC[0] = assem_sol.z_BC[1];
+		assem_sol.z_BC[sim_params.cells + 1] = assem_sol.z_BC[sim_params.cells];
 
 		if (sim_params.manning > 0)
 		{
 			for (int i = 1; i < sim_params.cells + 1; i++)
 			{
-				assem_sol.qWithBC[i] += frictionImplicit(sim_params, solver_params, dt, assem_sol.hWithBC[i], assem_sol.qWithBC[i]);
+				assem_sol.q_BC[i] += friction_implicit(sim_params, solver_params, dt, assem_sol.h_BC[i], assem_sol.q_BC[i]);
 			}
 		}
 
@@ -183,58 +161,58 @@ int main()
 		// initialising dry vs wet cells, ignore ghost cells
 		for (int i = 1; i < sim_params.cells + 1; i++)
 		{
-			real hLocal = assem_sol.hWithBC[i];
-			real hBackward = assem_sol.hWithBC[i - 1];
-			real hForward = assem_sol.hWithBC[i + 1];
+			real h_loc = assem_sol.h_BC[i];
+			real h_back = assem_sol.h_BC[i - 1];
+			real h_Forward = assem_sol.h_BC[i + 1];
 
-			real hMax = max(hLocal, hBackward);
-			hMax = max(hForward, hMax);
+			real hMax = max(h_loc, h_back);
+			hMax = max(h_Forward, hMax);
 
 			dry[i] = (hMax <= solver_params.tol_dry);
 		}
 
 		for (int i = 0; i < sim_params.cells + 2; i++)
 		{
-			etaTemp[i] = assem_sol.hWithBC[i] + assem_sol.zWithBC[i];
+			etaTemp[i] = assem_sol.h_BC[i] + assem_sol.z_BC[i];
 		}
 
 		// initialising interface values
 		for (int i = 0; i < sim_params.cells + 1; i++)
 		{
-			face_vals.q_east[i] = assem_sol.qWithBC[i + 1];
-			face_vals.h_east[i] = assem_sol.hWithBC[i + 1];
+			face_vals.q_east[i] = assem_sol.q_BC[i + 1];
+			face_vals.h_east[i] = assem_sol.h_BC[i + 1];
 			face_vals.eta_east[i] = etaTemp[i + 1];
 
-			face_vals.q_west[i] = assem_sol.qWithBC[i];
-			face_vals.h_west[i] = assem_sol.hWithBC[i];
+			face_vals.q_west[i] = assem_sol.q_BC[i];
+			face_vals.h_west[i] = assem_sol.h_BC[i];
 			face_vals.eta_west[i] = etaTemp[i];
 		}
 
 		// correcting downwind and upwind eta values
-		face_vals.eta_east[sim_params.cells] = etaTemp[sim_params.cells] - assem_sol.hWithBC[sim_params.cells] + assem_sol.hWithBC[sim_params.cells + 1];
-		face_vals.eta_west[0] = etaTemp[1] - assem_sol.hWithBC[1] + assem_sol.hWithBC[0];
+		face_vals.eta_east[sim_params.cells] = etaTemp[sim_params.cells] - assem_sol.h_BC[sim_params.cells] + assem_sol.h_BC[sim_params.cells + 1];
+		face_vals.eta_west[0] = etaTemp[1] - assem_sol.h_BC[1] + assem_sol.h_BC[0];
 
 		for (int i = 0; i < sim_params.cells + 1; i++)
 		{
-			real uWest = (face_vals.h_west[i] <= solver_params.tol_dry) ? 0 : face_vals.q_west[i] / face_vals.h_west[i];
-			real uEast = (face_vals.h_east[i] <= solver_params.tol_dry) ? 0 : face_vals.q_east[i] / face_vals.h_east[i];
+			real u_west = (face_vals.h_west[i] <= solver_params.tol_dry) ? 0 : face_vals.q_west[i] / face_vals.h_west[i];
+			real u_east = (face_vals.h_east[i] <= solver_params.tol_dry) ? 0 : face_vals.q_east[i] / face_vals.h_east[i];
 
-			real zWest = face_vals.eta_west[i] - face_vals.h_west[i];
-			real zEast = face_vals.eta_east[i] - face_vals.h_east[i];
+			real z_west = face_vals.eta_west[i] - face_vals.h_west[i];
+			real z_east = face_vals.eta_east[i] - face_vals.h_east[i];
 
-			real z_star_intermediate = max(zWest, zEast);
+			real z_star_intermediate = max(z_west, z_east);
 
-			deltaWest[i] = max(C(0.0), -(face_vals.eta_west[i] - z_star_intermediate));
-			deltaEast[i] = max(C(0.0), -(face_vals.eta_east[i] - z_star_intermediate));
+			delta_west[i] = max(C(0.0), -(face_vals.eta_west[i] - z_star_intermediate));
+			delta_east[i] = max(C(0.0), -(face_vals.eta_east[i] - z_star_intermediate));
 
 			star_vals.h_west[i] = max(C(0.0), face_vals.eta_west[i] - z_star_intermediate);
-			star_vals.q_west[i] = uWest * star_vals.h_west[i];
+			star_vals.q_west[i] = u_west * star_vals.h_west[i];
 
 			star_vals.h_east[i] = max(C(0.0), face_vals.eta_east[i] - z_star_intermediate);
-			star_vals.q_east[i] = uEast * star_vals.h_east[i];
+			star_vals.q_east[i] = u_east * star_vals.h_east[i];
 
-			star_vals.z_west[i] = z_star_intermediate - deltaWest[i];
-			star_vals.z_east[i] = z_star_intermediate - deltaEast[i];
+			star_vals.z_west[i] = z_star_intermediate - delta_west[i];
+			star_vals.z_east[i] = z_star_intermediate - delta_east[i];
 		}
 
 		// initialising numerical fluxes
@@ -255,14 +233,14 @@ int main()
 			// skip increment in dry cells
 			if (!dry[i])
 			{
-				real massIncrement = -(1 / dx) * (fluxes.mass[i] - fluxes.mass[i - 1]);
-				real momentumIncrement = -(1 / dx) * (fluxes.momentum[i] - fluxes.momentum[i - 1] + 2 * sqrt(C(3.0)) * solver_params.g * bar_vals.h[i - 1] * bar_vals.z[i - 1]);
+				real mass_increment = -(1 / dx) * (fluxes.mass[i] - fluxes.mass[i - 1]);
+				real momentum_increment = -(1 / dx) * (fluxes.momentum[i] - fluxes.momentum[i - 1] + 2 * sqrt(C(3.0)) * solver_params.g * bar_vals.h[i - 1] * bar_vals.z[i - 1]);
 
 				real a = fluxes.momentum[i] - fluxes.momentum[i - 1];
 				real b = 2 * sqrt(C(3.0)) * solver_params.g * bar_vals.h[i - 1] * bar_vals.z[i - 1];
 
-				assem_sol.hWithBC[i] += dt * massIncrement;
-				assem_sol.qWithBC[i] = (assem_sol.hWithBC[i] <= solver_params.tol_dry) ? 0 : assem_sol.qWithBC[i] + dt * momentumIncrement;
+				assem_sol.h_BC[i] += dt * mass_increment;
+				assem_sol.q_BC[i] = (assem_sol.h_BC[i] <= solver_params.tol_dry) ? 0 : assem_sol.q_BC[i] + dt * momentum_increment;
 			}
 		}
 
@@ -272,14 +250,14 @@ int main()
 
 		for (int i = 1; i < sim_params.cells + 1; i++)
 		{
-			if (assem_sol.hWithBC[i] > solver_params.tol_dry)
+			if (assem_sol.h_BC[i] > solver_params.tol_dry)
 			{
-				real u = assem_sol.qWithBC[i] / assem_sol.hWithBC[i];
-				real dtCFL = solver_params.CFL * dx / (abs(u) + sqrt(solver_params.g * assem_sol.hWithBC[i]));
+				real u = assem_sol.q_BC[i] / assem_sol.h_BC[i];
+				real dtCFL = solver_params.CFL * dx / (abs(u) + sqrt(solver_params.g * assem_sol.h_BC[i]));
 				dt = min(dt, dtCFL);
 			}
 
-			total_mass  += assem_sol.hWithBC[i] * dx;
+			total_mass  += assem_sol.h_BC[i] * dx;
 		}
 
 		steps++;
@@ -290,10 +268,10 @@ int main()
 			clock_t current = clock();
 			real time = (real)(current - start) / CLOCKS_PER_SEC * C(1000.0);
 
-			data << timeNow << "," << time << endl;
+			data << time_now << "," << time << endl;
 		}
 
-		printf("Mass: %.17g, time step: %f, time: %f s\n", total_mass , dt, timeNow);
+		printf("Mass: %.17g, time step: %f, time: %f s\n", total_mass , dt, time_now);
 	}
 
 	
@@ -301,7 +279,7 @@ int main()
 	clock_t current = clock();
 	real time = (real)(current - start) / CLOCKS_PER_SEC * C(1000.0);
 
-	data << timeNow << "," << time << endl;
+	data << time_now << "," << time << endl;
 
 	data.close();
 
@@ -314,7 +292,7 @@ int main()
 
 	for (int i = 0; i < sim_params.cells; i++)
 	{
-		test << (nodal_vals.x[i] + nodal_vals.x[i + 1]) / 2 << "," << assem_sol.qWithBC[i + 1] << "," << assem_sol.zWithBC[i + 1] << "," << max(assem_sol.zWithBC[i + 1], assem_sol.hWithBC[i + 1] + assem_sol.zWithBC[i + 1]) << endl;
+		test << (nodal_vals.x[i] + nodal_vals.x[i + 1]) / 2 << "," << assem_sol.q_BC[i + 1] << "," << assem_sol.z_BC[i + 1] << "," << max(assem_sol.z_BC[i + 1], assem_sol.h_BC[i + 1] + assem_sol.z_BC[i + 1]) << endl;
 	}
 
 	test.close();
@@ -329,8 +307,8 @@ int main()
 
 	delete[] dry;
 	delete[] etaTemp;
-	delete[] deltaWest;
-	delete[] deltaEast;
+	delete[] delta_west;
+	delete[] delta_east;
 
 	// print execution time to console 
 	clock_t end = clock();

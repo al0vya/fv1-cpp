@@ -2,7 +2,7 @@
 
 void free_assembled_solution(AssembledSolution& assem_sol)
 {
-	delete[] assem_sol.qWithBC;
-	delete[] assem_sol.hWithBC;
-	delete[] assem_sol.zWithBC;
+	delete[] assem_sol.q_BC;
+	delete[] assem_sol.h_BC;
+	delete[] assem_sol.z_BC;
 }

@@ -1,6 +1,6 @@
-#include "hInitialConservative.h"
+#include "h_init_c_property.h"
 
-real hInitialConservative(BoundaryConditions bcs, real z_int, real x_int)
+real h_init_c_property(BoundaryConditions bcs, real z_int, real x_int)
 {
 	real etaWest = bcs.hl;
 	real etaEast = bcs.hr;

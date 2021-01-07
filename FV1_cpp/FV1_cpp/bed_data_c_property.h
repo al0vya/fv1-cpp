@@ -3,4 +3,4 @@
 
 #include "real.h"
 
-real bedDataConservative(real x_int);
+real bed_data_c_property(real x_int);
