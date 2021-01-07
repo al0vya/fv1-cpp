@@ -39,15 +39,6 @@
     <ClCompile Include="hInitialOvertopping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="set_solver_parameters_for_test_case.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="set_simulation_parameters_for_test_case.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="set_boundary_conditions_for_test_case.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="set_error_threshold_epsilon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -55,6 +46,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="set_num_cells.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="set_simulation_parameters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="set_solver_parameters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="set_boundary_conditions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -92,15 +92,6 @@
     <ClInclude Include="hInitialConservative.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="set_boundary_conditions_for_test_case.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="set_simulation_parameters_for_test_case.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="set_solver_parameters_for_test_case.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="set_error_threshold_epsilon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -126,6 +117,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NodalValues.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="set_simulation_parameters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="set_solver_parameters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="set_boundary_conditions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

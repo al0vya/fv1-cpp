@@ -10,9 +10,9 @@
 #include "SimulationParameters.h"
 #include "SolverParameters.h"
 #include "BoundaryConditions.h"
-#include "set_simulation_parameters_for_test_case.h"
-#include "set_solver_parameters_for_test_case.h"
-#include "set_boundary_conditions_for_test_case.h"
+#include "set_simulation_parameters.h"
+#include "set_solver_parameters.h"
+#include "set_boundary_conditions.h"
 #include "set_num_cells.h"
 #include "set_test_case.h"
 #include "bedDataConservative.h"
@@ -42,9 +42,9 @@ int main()
 	// INITIALISATION OF VARIABLES AND INSTANTIATION OF STRUCTURES //
 	// =========================================================== //
 
-	SimulationParameters sim_params    = set_simulation_parameters_for_test_case(test_case_selection, num_cells);
-	SolverParameters     solver_params = set_solver_parameters_for_test_case();
-	BoundaryConditions   bcs           = set_boundary_conditions_for_test_case(test_case_selection);
+	SimulationParameters sim_params    = set_simulation_parameters(test_case_selection, num_cells);
+	SolverParameters     solver_params = set_solver_parameters();
+	BoundaryConditions   bcs           = set_boundary_conditions(test_case_selection);
 
 	NodalValues       nodal_values;
 	AssembledSolution assem_sol;

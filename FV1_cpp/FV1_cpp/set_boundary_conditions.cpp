@@ -1,7 +1,7 @@
-#include "set_boundary_conditions_for_test_case.h"
+#include "set_boundary_conditions.h"
 #include "real.h"
 
-BoundaryConditions set_boundary_conditions_for_test_case(int test_case_selection)
+BoundaryConditions set_boundary_conditions(int test_case_selection)
 {
 	BoundaryConditions bcs;
 

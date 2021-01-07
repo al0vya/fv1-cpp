@@ -147,11 +147,11 @@
     <ClCompile Include="qInitial.cpp" />
     <ClCompile Include="fluxHLL.cpp" />
     <ClCompile Include="hInitialOvertopping.cpp" />
-    <ClCompile Include="set_boundary_conditions_for_test_case.cpp" />
+    <ClCompile Include="set_boundary_conditions.cpp" />
     <ClCompile Include="set_error_threshold_epsilon.cpp" />
     <ClCompile Include="set_num_cells.cpp" />
-    <ClCompile Include="set_simulation_parameters_for_test_case.cpp" />
-    <ClCompile Include="set_solver_parameters_for_test_case.cpp" />
+    <ClCompile Include="set_simulation_parameters.cpp" />
+    <ClCompile Include="set_solver_parameters.cpp" />
     <ClCompile Include="set_test_case.cpp" />
     <ClCompile Include="uFaceValues.cpp" />
   </ItemGroup>
@@ -169,11 +169,11 @@
     <ClInclude Include="NodalValues.h" />
     <ClInclude Include="qInitial.h" />
     <ClInclude Include="real.h" />
-    <ClInclude Include="set_boundary_conditions_for_test_case.h" />
+    <ClInclude Include="set_boundary_conditions.h" />
     <ClInclude Include="set_error_threshold_epsilon.h" />
     <ClInclude Include="set_num_cells.h" />
-    <ClInclude Include="set_simulation_parameters_for_test_case.h" />
-    <ClInclude Include="set_solver_parameters_for_test_case.h" />
+    <ClInclude Include="set_simulation_parameters.h" />
+    <ClInclude Include="set_solver_parameters.h" />
     <ClInclude Include="set_test_case.h" />
     <ClInclude Include="simulationParameters.h" />
     <ClInclude Include="SolverParameters.h" />

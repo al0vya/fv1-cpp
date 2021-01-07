@@ -1,7 +1,6 @@
-#include "set_solver_parameters_for_test_case.h"
-#include "real.h"
+#include "set_solver_parameters.h"
 
-SolverParameters set_solver_parameters_for_test_case()
+SolverParameters set_solver_parameters()
 {
 	SolverParameters solverParameters;
 
