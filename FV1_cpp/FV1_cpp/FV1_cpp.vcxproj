@@ -141,9 +141,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bedDataConservative.cpp" />
+    <ClCompile Include="free_assembled_solution.cpp" />
+    <ClCompile Include="free_bar_values.cpp" />
+    <ClCompile Include="free_face_values.cpp" />
+    <ClCompile Include="free_fluxes.cpp" />
+    <ClCompile Include="free_nodal_values.cpp" />
+    <ClCompile Include="free_star_values.cpp" />
     <ClCompile Include="frictionImplicit.cpp" />
     <ClCompile Include="hInitialConservative.cpp" />
     <ClCompile Include="mainProgram.cpp" />
+    <ClCompile Include="malloc_assembled_solution.cpp" />
+    <ClCompile Include="malloc_bar_values.cpp" />
+    <ClCompile Include="malloc_face_values.cpp" />
+    <ClCompile Include="malloc_fluxes.cpp" />
+    <ClCompile Include="malloc_nodal_values.cpp" />
+    <ClCompile Include="malloc_star_values.cpp" />
     <ClCompile Include="qInitial.cpp" />
     <ClCompile Include="fluxHLL.cpp" />
     <ClCompile Include="hInitialOvertopping.cpp" />
@@ -162,10 +174,22 @@
     <ClInclude Include="BoundaryConditions.h" />
     <ClInclude Include="FaceValues.h" />
     <ClInclude Include="Fluxes.h" />
+    <ClInclude Include="free_assembled_solution.h" />
+    <ClInclude Include="free_bar_values.h" />
+    <ClInclude Include="free_face_values.h" />
+    <ClInclude Include="free_fluxes.h" />
+    <ClInclude Include="free_nodal_values.h" />
+    <ClInclude Include="free_star_values.h" />
     <ClInclude Include="frictionImplicit.h" />
     <ClInclude Include="fluxHLL.h" />
     <ClInclude Include="hInitialOvertopping.h" />
     <ClInclude Include="hInitialConservative.h" />
+    <ClInclude Include="malloc_assembled_solution.h" />
+    <ClInclude Include="malloc_bar_values.h" />
+    <ClInclude Include="malloc_face_values.h" />
+    <ClInclude Include="malloc_fluxes.h" />
+    <ClInclude Include="malloc_nodal_values.h" />
+    <ClInclude Include="malloc_star_values.h" />
     <ClInclude Include="NodalValues.h" />
     <ClInclude Include="qInitial.h" />
     <ClInclude Include="real.h" />

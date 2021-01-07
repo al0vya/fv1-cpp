@@ -57,6 +57,42 @@
     <ClCompile Include="set_boundary_conditions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="malloc_nodal_values.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="malloc_assembled_solution.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="malloc_face_values.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="malloc_star_values.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="malloc_fluxes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="malloc_bar_values.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="free_nodal_values.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="free_assembled_solution.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="free_face_values.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="free_star_values.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="free_fluxes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="free_bar_values.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="real.h">
@@ -126,6 +162,42 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="set_boundary_conditions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="malloc_nodal_values.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="malloc_assembled_solution.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="malloc_face_values.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="malloc_star_values.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="malloc_fluxes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="malloc_bar_values.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="free_nodal_values.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="free_assembled_solution.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="free_face_values.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="free_star_values.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="free_fluxes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="free_bar_values.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
