@@ -12,25 +12,24 @@ Six test case simulations can be run using FV1-CPU to simulate different situati
 
 ## Wet dam break
 
-<img src="https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/wet_dam_break.gif" width="33%" height="33%">
+<img src="https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/wet_dam_break.gif" width="50%" height="50%">
 
 ## Dry dam break
 
-![dry_dam_break](https://github.com/al0vya/FV1_GPU/tree/master/FV1_GPU_1D/test_case_gifs/dry_dam_break.gif)
+<img src="https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/dry_dam_break.gif" width="50%" height="50%">
 
 ## Dry dam break with friction
 
-![dry_dam_break_fric](https://github.com/al0vya/FV1_GPU/tree/master/FV1_GPU_1D/test_case_gifs/dry_dam_break_fric.gif)
+<img src="https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/dry_dam_break_fric.gif" width="50%" height="50%">
 
 ## Water at rest
 
-![wet_c_property](https://github.com/al0vya/FV1_GPU/tree/master/FV1_GPU_1D/test_case_gifs/wet_c_property.gif)
+<img src="https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/wet_c_property.gif" width="50%" height="50%">
 
 ## Water at rest with dry zones
 
-![wet_dry_c_property](https://github.com/al0vya/FV1_GPU/tree/master/FV1_GPU_1D/test_case_gifs/wet_dry_c_property.gif)
+<img src="https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/wet_dry_c_property.gif" width="50%" height="50%">
 
 ## Water overtopping a building
 
-![building_overtopping](https://github.com/al0vya/FV1_GPU/tree/master/FV1_GPU_1D/test_case_gifs/building_overtopping.gif)
-
+<img src="https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/building_overtopping.gif" width="50%" height="50%">
