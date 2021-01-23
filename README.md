@@ -12,7 +12,7 @@ Six test case simulations can be run using FV1-CPU to simulate different situati
 
 ## Wet dam break
 
-[wet_dam_break](https://github.com/al0vya/FV1_GPU/tree/master/FV1_GPU_1D/test_case_gifs/wet_dam_break.gif)
+![wet_dam_break](https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/wet_dam_break.gif)
 
 ## Dry dam break
 
