@@ -1,6 +1,6 @@
 # FV1-CPU
 
-This is a shallow water model or *solver*, termed 'FV1-CPU', for the one-dimensional (1D) [shallow water equations](https://en.wikipedia.org/wiki/Shallow_water_equations) (SWE), which are a set of hyperbolic partial differential equations. FV1-CPU has three other counterpart solvers for the 1D SWE:
+This is a shallow water model or *solver*, termed 'FV1-CPU', for the one-dimensional (1D) [shallow water equations](https://en.wikipedia.org/wiki/Shallow_water_equations) (SWE), which are a set of hyperbolic partial differential equations (PDEs). FV1-CPU has three other counterpart solvers for the 1D SWE:
 
 * [HFV1-CPU](github.com/al0vya/HFV1_cpp): an adaptive solver
 * [FV1-GPU](github.com/al0vya/FV1_GPU): a parallelised solver
