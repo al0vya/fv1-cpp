@@ -10,6 +10,8 @@ FV1-CPU is a finite volume (FV1) model. These models represent a physical domain
 
 Six test case simulations can be run using FV1-CPU to simulate different situations that can arise during shallow water flow in a channel, shown below. After building and then running the executable, the user must select which test case to run and how many cells are to comprise the mesh.
 
+To understand the following test case animations, imagine viewing the channel from the side on.
+
 ## Wet dam break
 
 <img src="https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/wet_dam_break.gif" width="50%" height="50%">
