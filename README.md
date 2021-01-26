@@ -4,8 +4,8 @@
 
 This is a shallow water model, or *solver*, named 'FV1-CPU' and is so called because it uses a finite volume (FV1) scheme to solve the one-dimensional (1D) [shallow water equations](https://en.wikipedia.org/wiki/Shallow_water_equations) (SWE), which are a set of partial differential equations (PDEs). FV1-CPU has three other counterpart solvers for the 1D SWE:
 
-* <a href="github.com/al0vya/HFV1_cpp">HFV1-CPU</a>: an adaptive solver
-* <a href="github.com/al0vya/FV1_GPU">FV1-GPU</a>: a parallelised solver
+* <a href="https://github.com/al0vya/HFV1_cpp">HFV1-CPU</a>: an adaptive solver
+* <a href="https://github.com/al0vya/FV1_GPU">FV1-GPU</a>: a parallelised solver
 * HFV1-GPU: a parallelised adaptive solver
 
 FV1 models represent a physical domain of interest using a mesh, which comprises discrete elements or cells. A discretised form of the PDE is solved to obtain quantities of interest e.g. water height or velocity, over each cell. The discretised form can be obtained by simplifying differential or integral operators in the PDE into algebraic relations that can be more easily computed to solve the PDE. By solving over each and every cell, quantities of interest are obtained over the entire mesh, thereby modelling the physical domain. An example of a physical domain that can be modelled using the 1D SWE is a channel (colloquially, a river).
