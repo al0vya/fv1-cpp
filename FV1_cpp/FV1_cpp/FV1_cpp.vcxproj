@@ -142,12 +142,6 @@
   <ItemGroup>
     <ClCompile Include="add_ghost_cells.cpp" />
     <ClCompile Include="bedDataConservative.cpp" />
-    <ClCompile Include="free_assembled_solution.cpp" />
-    <ClCompile Include="free_bar_values.cpp" />
-    <ClCompile Include="free_face_values.cpp" />
-    <ClCompile Include="free_fluxes.cpp" />
-    <ClCompile Include="free_nodal_values.cpp" />
-    <ClCompile Include="free_star_values.cpp" />
     <ClCompile Include="friction_implicit.cpp" />
     <ClCompile Include="friction_update.cpp" />
     <ClCompile Include="fv1_operator.cpp" />
@@ -160,12 +154,6 @@
     <ClCompile Include="get_wet_dry_cells.cpp" />
     <ClCompile Include="h_init_c_property.cpp" />
     <ClCompile Include="MAIN.cpp" />
-    <ClCompile Include="malloc_assembled_solution.cpp" />
-    <ClCompile Include="malloc_bar_values.cpp" />
-    <ClCompile Include="malloc_face_values.cpp" />
-    <ClCompile Include="malloc_fluxes.cpp" />
-    <ClCompile Include="malloc_nodal_values.cpp" />
-    <ClCompile Include="malloc_star_values.cpp" />
     <ClCompile Include="fluxHLL.cpp" />
     <ClCompile Include="h_init_overtop.cpp" />
     <ClCompile Include="set_boundary_conditions.cpp" />

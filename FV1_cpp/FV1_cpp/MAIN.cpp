@@ -32,27 +32,26 @@
 #include "set_simulation_parameters.h"
 #include "set_solver_parameters.h"
 #include "set_boundary_conditions.h"
-#include "set_num_cells.h"
-#include "set_test_case.h"
 
-// Memory (de)allocators
-#include "malloc_assembled_solution.h"
-#include "malloc_bar_values.h"
-#include "malloc_face_values.h"
-#include "malloc_fluxes.h"
-#include "malloc_nodal_values.h"
-#include "malloc_star_values.h"
-#include "free_assembled_solution.h"
-#include "free_bar_values.h"
-#include "free_face_values.h"
-#include "free_fluxes.h"
-#include "free_nodal_values.h"
-#include "free_star_values.h"
-
-int main()
+int main
+(
+	int    argc,
+	char** argv
+)
 {
-	int test_case = set_test_case();
-	int num_cells = set_num_cells();
+	if (argc < 3)
+	{
+		printf
+		(
+			"Please run in the command line as follows:\n\n"
+			"FV1_cpp.exe <TEST_CASE> <NUM_CELLS>"
+		);
+
+		exit(-1);
+	}
+	
+	int test_case = strtol(argv[1], nullptr, 10); //set_test_case();
+	int num_cells = strtol(argv[2], nullptr, 10); //set_num_cells();
 
 	clock_t start = clock();
 	
@@ -65,25 +64,15 @@ int main()
 	SolverParameters     solver_params = set_solver_parameters();
 	BoundaryConditions   bcs           = set_boundary_conditions(test_case);
 
-	NodalValues       nodal_vals;
-	AssembledSolution assem_sol;
-	FaceValues        face_vals;
-	StarValues        star_vals;
-	Fluxes            fluxes;
-	BarValues         bar_vals;
+	NodalValues       nodal_vals(num_cells + 1);
+	AssembledSolution assem_sol (num_cells);
+	FaceValues        face_vals (num_cells + 1);
+	StarValues        star_vals (num_cells + 1);
+	Fluxes            fluxes    (num_cells + 1);
+	BarValues         bar_vals  (num_cells);
 
-	// Memory allocation
-	malloc_nodal_values(nodal_vals, sim_params);
-	malloc_assembled_solution(assem_sol, sim_params);
-	malloc_face_values(face_vals, sim_params);
-	malloc_star_values(star_vals, sim_params);
-	malloc_fluxes(fluxes, sim_params);
-	malloc_bar_values(bar_vals, sim_params);
-
-	int* dry_cells = new int[sim_params.cells + 2];
-
-	real* eta_temp = new real[sim_params.cells + 2];
-
+	int*  dry_cells  = new int [sim_params.cells + 2];
+	real* eta_temp   = new real[sim_params.cells + 2];
 	real* delta_west = new real[sim_params.cells + 1];
 	real* delta_east = new real[sim_params.cells + 1];
 
@@ -210,13 +199,6 @@ int main()
 	// =================== //
 	// MEMORY DEALLOCATION //
 	// =================== //
-
-	free_nodal_values(nodal_vals);
-	free_assembled_solution(assem_sol);
-	free_face_values(face_vals);
-	free_star_values(star_vals);
-	free_bar_values(bar_vals);
-	free_fluxes(fluxes);
 
 	delete[] dry_cells;
 	delete[] eta_temp;

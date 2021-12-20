@@ -39,42 +39,6 @@
     <ClCompile Include="set_boundary_conditions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="malloc_nodal_values.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="malloc_assembled_solution.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="malloc_face_values.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="malloc_star_values.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="malloc_fluxes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="malloc_bar_values.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="free_nodal_values.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="free_assembled_solution.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="free_face_values.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="free_star_values.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="free_fluxes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="free_bar_values.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="h_init_c_property.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
