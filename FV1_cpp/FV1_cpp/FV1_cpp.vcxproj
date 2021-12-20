@@ -18,6 +18,61 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="classes\AssembledSolution.h" />
+    <ClInclude Include="classes\BarValues.h" />
+    <ClInclude Include="classes\BoundaryConditions.h" />
+    <ClInclude Include="classes\FaceValues.h" />
+    <ClInclude Include="classes\Fluxes.h" />
+    <ClInclude Include="classes\NodalValues.h" />
+    <ClInclude Include="classes\real.h" />
+    <ClInclude Include="classes\simulationParameters.h" />
+    <ClInclude Include="classes\SolverParameters.h" />
+    <ClInclude Include="classes\StarValues.h" />
+    <ClInclude Include="input\set_boundary_conditions.h" />
+    <ClInclude Include="input\set_simulation_parameters.h" />
+    <ClInclude Include="input\set_solver_parameters.h" />
+    <ClInclude Include="operator\add_ghost_cells.h" />
+    <ClInclude Include="operator\baselineMesh.h" />
+    <ClInclude Include="operator\bed_data_c_property.h" />
+    <ClInclude Include="operator\fluxHLL.h" />
+    <ClInclude Include="operator\friction_implicit.h" />
+    <ClInclude Include="operator\friction_update.h" />
+    <ClInclude Include="operator\fv1_operator.h" />
+    <ClInclude Include="operator\get_bar_values.h" />
+    <ClInclude Include="operator\get_dt_CFL.h" />
+    <ClInclude Include="operator\get_face_values.h" />
+    <ClInclude Include="operator\get_modal_values.h" />
+    <ClInclude Include="operator\get_nodal_values.h" />
+    <ClInclude Include="operator\get_positivity_preserving_nodes.h" />
+    <ClInclude Include="operator\get_wet_dry_cells.h" />
+    <ClInclude Include="operator\h_init_c_property.h" />
+    <ClInclude Include="operator\h_init_overtop.h" />
+    <ClInclude Include="output\write_solution_to_file.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="input\set_boundary_conditions.cpp" />
+    <ClCompile Include="input\set_simulation_parameters.cpp" />
+    <ClCompile Include="input\set_solver_parameters.cpp" />
+    <ClCompile Include="MAIN.cpp" />
+    <ClCompile Include="operator\add_ghost_cells.cpp" />
+    <ClCompile Include="operator\baselineMesh.cpp" />
+    <ClCompile Include="operator\bedDataConservative.cpp" />
+    <ClCompile Include="operator\fluxHLL.cpp" />
+    <ClCompile Include="operator\friction_implicit.cpp" />
+    <ClCompile Include="operator\friction_update.cpp" />
+    <ClCompile Include="operator\fv1_operator.cpp" />
+    <ClCompile Include="operator\get_bar_values.cpp" />
+    <ClCompile Include="operator\get_dt_CFL.cpp" />
+    <ClCompile Include="operator\get_face_values.cpp" />
+    <ClCompile Include="operator\get_modal_values.cpp" />
+    <ClCompile Include="operator\get_nodal_values.cpp" />
+    <ClCompile Include="operator\get_positivity_preserving_nodes.cpp" />
+    <ClCompile Include="operator\get_wet_dry_cells.cpp" />
+    <ClCompile Include="operator\h_init_c_property.cpp" />
+    <ClCompile Include="operator\h_init_overtop.cpp" />
+    <ClCompile Include="output\write_solution_to_file.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{BA54770E-0E5B-469B-9022-0009D5E62447}</ProjectGuid>
@@ -139,77 +194,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="add_ghost_cells.cpp" />
-    <ClCompile Include="bedDataConservative.cpp" />
-    <ClCompile Include="friction_implicit.cpp" />
-    <ClCompile Include="friction_update.cpp" />
-    <ClCompile Include="fv1_operator.cpp" />
-    <ClCompile Include="get_bar_values.cpp" />
-    <ClCompile Include="get_dt_CFL.cpp" />
-    <ClCompile Include="get_face_values.cpp" />
-    <ClCompile Include="get_modal_values.cpp" />
-    <ClCompile Include="get_nodal_values.cpp" />
-    <ClCompile Include="get_positivity_preserving_nodes.cpp" />
-    <ClCompile Include="get_wet_dry_cells.cpp" />
-    <ClCompile Include="h_init_c_property.cpp" />
-    <ClCompile Include="MAIN.cpp" />
-    <ClCompile Include="fluxHLL.cpp" />
-    <ClCompile Include="h_init_overtop.cpp" />
-    <ClCompile Include="set_boundary_conditions.cpp" />
-    <ClCompile Include="set_error_threshold_epsilon.cpp" />
-    <ClCompile Include="set_num_cells.cpp" />
-    <ClCompile Include="set_simulation_parameters.cpp" />
-    <ClCompile Include="set_solver_parameters.cpp" />
-    <ClCompile Include="set_test_case.cpp" />
-    <ClCompile Include="write_solution_to_file.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="add_ghost_cells.h" />
-    <ClInclude Include="AssembledSolution.h" />
-    <ClInclude Include="BarValues.h" />
-    <ClInclude Include="bed_data_c_property.h" />
-    <ClInclude Include="BoundaryConditions.h" />
-    <ClInclude Include="FaceValues.h" />
-    <ClInclude Include="Fluxes.h" />
-    <ClInclude Include="free_assembled_solution.h" />
-    <ClInclude Include="free_bar_values.h" />
-    <ClInclude Include="free_face_values.h" />
-    <ClInclude Include="free_fluxes.h" />
-    <ClInclude Include="free_nodal_values.h" />
-    <ClInclude Include="free_star_values.h" />
-    <ClInclude Include="friction_implicit.h" />
-    <ClInclude Include="fluxHLL.h" />
-    <ClInclude Include="friction_update.h" />
-    <ClInclude Include="fv1_operator.h" />
-    <ClInclude Include="get_bar_values.h" />
-    <ClInclude Include="get_dt_CFL.h" />
-    <ClInclude Include="get_face_values.h" />
-    <ClInclude Include="get_modal_values.h" />
-    <ClInclude Include="get_nodal_values.h" />
-    <ClInclude Include="get_positivity_preserving_nodes.h" />
-    <ClInclude Include="get_wet_dry_cells.h" />
-    <ClInclude Include="h_init_overtop.h" />
-    <ClInclude Include="h_init_c_property.h" />
-    <ClInclude Include="malloc_assembled_solution.h" />
-    <ClInclude Include="malloc_bar_values.h" />
-    <ClInclude Include="malloc_face_values.h" />
-    <ClInclude Include="malloc_fluxes.h" />
-    <ClInclude Include="malloc_nodal_values.h" />
-    <ClInclude Include="malloc_star_values.h" />
-    <ClInclude Include="NodalValues.h" />
-    <ClInclude Include="real.h" />
-    <ClInclude Include="set_boundary_conditions.h" />
-    <ClInclude Include="set_error_threshold_epsilon.h" />
-    <ClInclude Include="set_num_cells.h" />
-    <ClInclude Include="set_simulation_parameters.h" />
-    <ClInclude Include="set_solver_parameters.h" />
-    <ClInclude Include="set_test_case.h" />
-    <ClInclude Include="simulationParameters.h" />
-    <ClInclude Include="SolverParameters.h" />
-    <ClInclude Include="StarValues.h" />
-    <ClInclude Include="write_solution_to_file.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
