@@ -4,12 +4,15 @@ void write_solution_to_file
 (
 	SimulationParameters& sim_params, 
 	NodalValues&          nodal_vals, 
-	AssembledSolution&    assem_sol
+	AssembledSolution&    assem_sol,
+	SaveInterval&         saveint
 )
 {
+	std::string filename = "solution_data-" + std::to_string(saveint.count - 1) + ".csv";
+	
 	std::ofstream test;
 
-	test.open("solution_data.csv");
+	test.open(filename);
 
 	test << "x,q,z,eta" << std::endl;
 

@@ -19,26 +19,29 @@
 #include "input/set_solver_parameters.h"
 #include "input/set_boundary_conditions.h"
 
+#include "classes/SaveInterval.h"
+
 int main
 (
 	int    argc,
 	char** argv
 )
 {
-	if (argc < 3)
+	if (argc < 4)
 	{
 		printf
 		(
 			"Please run in the command line as follows:\n\n"
-			"FV1_cpp.exe <TEST_CASE> <NUM_CELLS>"
+			"FV1_cpp.exe <TEST_CASE> <NUM_CELLS> <SAVE_INTERVAL>"
 		);
 
 		exit(-1);
 	}
 	
-	int test_case = strtol(argv[1], nullptr, 10); //set_test_case();
-	int num_cells = strtol(argv[2], nullptr, 10); //set_num_cells();
-
+	int  test_case = strtol(argv[1], nullptr, 10); //set_test_case();
+	int  num_cells = strtol(argv[2], nullptr, 10); //set_num_cells();
+	real interval  = strtof(argv[3], nullptr);
+	
 	clock_t start = clock();
 	
 	// =========================================================== //
@@ -56,6 +59,7 @@ int main
 	StarValues        star_vals (num_cells + 1);
 	Fluxes            fluxes    (num_cells + 1);
 	BarValues         bar_vals  (num_cells);
+	SaveInterval      saveint   = { interval };
 
 	int*  dry_cells  = new int [sim_params.cells + 2];
 	real* eta_temp   = new real[sim_params.cells + 2];
@@ -172,15 +176,19 @@ int main
 			total_mass
 		);
 
+		if ( saveint.save(time_now) )
+		{
+			write_solution_to_file
+			(
+				sim_params,
+				nodal_vals,
+				assem_sol,
+				saveint
+			);
+		}
+
 		printf("Mass: %.17g, time step: %f, time: %f s\n", total_mass, dt, time_now);
 	}
-
-	write_solution_to_file
-	(
-		sim_params, 
-		nodal_vals, 
-		assem_sol
-	);
 
 	// =================== //
 	// MEMORY DEALLOCATION //

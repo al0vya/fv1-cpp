@@ -26,6 +26,7 @@
     <ClInclude Include="classes\Fluxes.h" />
     <ClInclude Include="classes\NodalValues.h" />
     <ClInclude Include="classes\real.h" />
+    <ClInclude Include="classes\SaveInterval.h" />
     <ClInclude Include="classes\simulationParameters.h" />
     <ClInclude Include="classes\SolverParameters.h" />
     <ClInclude Include="classes\StarValues.h" />

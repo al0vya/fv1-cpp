@@ -117,6 +117,9 @@
     <ClInclude Include="input\set_solver_parameters.h">
       <Filter>Source Files\input</Filter>
     </ClInclude>
+    <ClInclude Include="classes\SaveInterval.h">
+      <Filter>Source Files\classes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="output\write_solution_to_file.cpp">
