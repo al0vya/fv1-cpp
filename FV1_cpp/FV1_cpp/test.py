@@ -9,6 +9,26 @@ import matplotlib.pylab  as pylab
 
 from mpl_toolkits.mplot3d import Axes3D
 
+def EXIT_HELP():
+    help_message = (
+        "Use as:\n\n" +
+        "    python test.py test <MODE> <NUM_CELLS>\n\n" +
+        "        MODE     : [debug,release]\n\n"
+        "    python test.py run <MODE> <TEST_CASE> <NUM_CELLS> <SAVE_INT>\n\n" +
+        "        MODE      : [debug,release]\n" +
+        "        TEST_CASE : [1,2,3,4,5,6]\n" +
+        "        SAVE_INT  : interval in seconds that the solution data are saved\n\n"
+        "    Available test cases:\n" +
+        "        1. Wet dam break\n" +
+        "        2. Dry dam break\n" +
+        "        3. Dry dam break with friction\n" +
+        "        4. Wet c property\n" +
+        "        5. Wet dry c property\n" +
+        "        6. Building overtopping"
+    )
+    
+    sys.exit(help_message)
+
 ####################################
 # NATURAL SORTING, READ UP ON THIS #
 ####################################
@@ -39,27 +59,6 @@ def get_filenames_natural_order():
 ####################################
 ####################################
 
-def EXIT_HELP():
-    help_message = (
-        "Use as:\n\n" +
-        "    python test.py test <MODE> <NUM_CELLS> <SAVE_INT>\n\n" +
-        "        MODE     : [debug,release]\n"
-        "        SAVE_INT : interval in seconds that the solution data are saved\n\n"
-        "    python test.py run <MODE> <TEST_CASE> <NUM_CELLS> <SAVE_INT>\n\n" +
-        "        MODE      : [debug,release]\n" +
-        "        TEST_CASE : [1,2,3,4,5,6]\n" +
-        "        SAVE_INT  : interval in seconds that the solution data are saved\n\n"
-        "    Available test cases:\n" +
-        "        1. Wet dam break\n" +
-        "        2. Dry dam break\n" +
-        "        3. Dry dam break with friction\n" +
-        "        4. Wet c property\n" +
-        "        5. Wet dry c property\n" +
-        "        6. Building overtopping"
-    )
-    
-    sys.exit(help_message)
-
 def clear_jpg_files():
     path = os.path.dirname(__file__)
     
@@ -72,6 +71,7 @@ test_names = [
     "wet-c-prop",
     "wet-dry-c-prop",
     "building-overtopping",
+    "triange-dam-break"
 ]
 
 sim_times = [
@@ -80,12 +80,42 @@ sim_times = [
     1.3,
     0.5,
     0.5,
-    10
+    10,
+    29.6
 ]
+
+class Limits:
+    def __init__(
+            self,
+            intervals
+        ):
+            eta = []
+            q   = []
+            z   = []
+            
+            for interval in range(intervals):
+                filename  = "solution_data-" + str(interval) + ".csv"
+                
+                dataframe = pd.read_csv(filename)
+                
+                eta += dataframe["eta"].tolist()
+                q   += dataframe["q"].tolist()
+                z   += dataframe["z"].tolist()
+                
+            self.eta_max = np.max(eta)
+            self.q_max   = np.max(q)
+            self.z_max   = np.max(z)
+            
+            self.eta_min = np.min(eta)
+            self.q_min   = np.min(q)
+            self.z_min   = np.min(z)
 
 def plot_soln(
         x,
         y,
+        topo,
+        ylim,
+        topolim,
         quantity,
         interval,
         ylabel,
@@ -96,12 +126,17 @@ def plot_soln(
         
         xlim = [ np.amin(x), np.amax(x) ]
         
-        ylim = [np.amin(y) * 0.98, np.amax(y) * 1.02]
+        topo_scale_factor = ylim[1] / topolim[1]
+        topo_scaled       = ( topo * topo_scale_factor + ylim[0] ) / 2
         
-        plt.plot(x, y, color='b', linewidth="1.5")    
+        plt.fill_between(x, y,           color=(65 / 255, 136 / 255, 239 / 255))    
+        plt.fill_between(x, topo_scaled, color=(159 / 255, 159 / 255, 159 / 255))    
+        
+        plt.plot(x, y          , color='k', linewidth=0.5)    
+        plt.plot(x, topo_scaled, color='k', linewidth=0.5)    
             
         plt.xlim(xlim)
-        plt.ylim(ylim)
+        plt.ylim( 0.98 * ylim[0], 1.02 * ylim[1] )
         plt.xlabel("$x \, (m)$")
         plt.ylabel(ylabel)
         plt.savefig(filename, bbox_inches="tight")
@@ -134,13 +169,18 @@ class Solution:
         self.eta = dataframe["eta"].values
         
     def plot_soln(
-        self
+        self,
+        limits
     ):
         print("Plotting solution interval " + str(self.interval) + "...")
         
-        plot_soln(self.x, self.q,   "q",   self.interval, "$q \, (m^2s^{-1})$", self.test_num, self.test_name)
-        plot_soln(self.x, self.eta, "eta", self.interval, "$\eta \, (m)$",      self.test_num, self.test_name)
-        plot_soln(self.x, self.z,   "z",   self.interval, "$z \, (m)$",         self.test_num, self.test_name)
+        qlim   = (limits.q_min,   limits.q_max)
+        etalim = (limits.eta_min, limits.eta_max)
+        zlim   = (limits.z_min,   limits.z_max)
+        
+        plot_soln(self.x, self.q,   self.z, qlim,   zlim,   "q", self.interval, "$q \, (m^2s^{-1})$", self.test_num, self.test_name)
+        plot_soln(self.x, self.eta, self.z, etalim, zlim, "eta", self.interval, "$\eta \, (m)$",      self.test_num, self.test_name)
+        plot_soln(self.x, self.z,   self.z, zlim,   zlim,   "z", self.interval, "$z \, (m)$",         self.test_num, self.test_name)
 
 def animate():
     images = []
@@ -179,15 +219,15 @@ def run():
         
         intervals = int( sim_times[int(test) - 1] / float(saveint) )
         
-        [ Solution(mode, interval, test, test_names[int(test) - 1]).plot_soln() for interval in range(intervals) ]
+        [ Solution(mode, interval, test, test_names[int(test) - 1]).plot_soln( Limits(intervals) ) for interval in range(intervals) ]
     else:
         EXIT_HELP()
         
 def run_tests():
     print("Attempting to run all tests...")
     
-    if len(sys.argv) > 4:
-        dummy, action, mode, num_cells, interval = sys.argv
+    if len(sys.argv) > 3:
+        dummy, action, mode, num_cells = sys.argv
         
         if   mode == "debug":
             solver_file = os.path.join(os.path.dirname(__file__), "..", "x64", "Debug", "FV1_cpp.exe")
@@ -199,8 +239,8 @@ def run_tests():
         tests = [1, 2, 3, 4, 5, 6]
         
         for i, test in enumerate(tests):
-            subprocess.run( [solver_file, str(test), num_cells, interval] )
-            Solution(mode, test, test_names[i]).plot_soln()
+            subprocess.run( [ solver_file, str(test), num_cells, sim_times[i] ] )
+            Solution(mode, test, test_names[i]).plot_soln( Limits(intervals) )
     else:
         EXIT_HELP()
 

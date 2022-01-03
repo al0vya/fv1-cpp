@@ -1,41 +1,39 @@
-# FV1-CPU
+# HFV1_cpp
 
-## Model description
+To use this model you need to have [Visual Studio 2019](https://visualstudio.microsoft.com/downloads/) or higher. You also need to have [Python](https://www.python.org/downloads/).
 
-This is a shallow water model, or *solver*, named 'FV1-CPU' and is so called because it uses a finite volume (FV1) scheme to solve the one-dimensional (1D) [shallow water equations](https://en.wikipedia.org/wiki/Shallow_water_equations) (SWE), which are a set of partial differential equations (PDEs). FV1-CPU has three other counterpart solvers for the 1D SWE:
+## Building the model executable
 
-* <a href="https://github.com/al0vya/HFV1_cpp">HFV1-CPU</a>: an adaptive solver
-* <a href="https://github.com/al0vya/FV1_GPU">FV1-GPU</a>: a parallelised solver
-* HFV1-GPU: a parallelised adaptive solver
-
-FV1 models represent a physical domain of interest using a mesh, which comprises discrete elements or cells. A discretised form of the PDE is solved to obtain quantities of interest e.g. water height or velocity, over each cell. The discretised form can be obtained by simplifying differential or integral operators in the PDE into algebraic relations that can be more easily computed to solve the PDE. By solving over each and every cell, quantities of interest are obtained over the entire mesh, thereby modelling the physical domain. An example of a physical domain that can be modelled using the 1D SWE is a channel (colloquially, a river).
+Open the `FV1_cpp.sln` file in Visual Studio 2019 and from the toolbar at the top, click `Build > Rebuild All`.
 
 ## Running the model
 
-6 test case simulations can be run using FV1-CPU to simulate different situations that can arise during shallow water flow in a channel, shown below. After building and then running the executable, the user must select which test case to run and how many cells are to comprise the mesh.
+Navigate to `FV1_cpp\FV1_cpp\FV1_cpp` using File Explorer. Click into the search bar of the explorer, type in `cmd` and press enter to open a command line. In the command line, type in `python test.py` and press enter to see further instructions on how to run the model.
 
-To understand the following test case animations, imagine viewing the channel from the side on i.e. a cross sectional view.
+## In-built test cases
+
+The model supports 7 in-built tests. The outputs from each test are shown in the animations below. The animations can be used to check for correctness if the model is modified in any way. 
 
 ### Wet dam break
 
-<img src="https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/wet_dam_break.gif" width="50%" height="50%">
+<img src="HFV1_cpp/wet-dam-break-eta.gif" width="50%" height="50%">
 
 ### Dry dam break
 
-<img src="https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/dry_dam_break.gif" width="50%" height="50%">
+<img src="HFV1_cpp/dry-dam-break-eta.gif" width="50%" height="50%">
 
 ### Dry dam break with friction
 
-<img src="https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/dry_dam_break_fric.gif" width="50%" height="50%">
+<img src="HFV1_cpp/dry-dam-break-fric-eta.gif" width="50%" height="50%">
 
-### Water at rest
+### Wet c-property
 
-<img src="https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/wet_c_property.gif" width="50%" height="50%">
+<img src="HFV1_cpp/wet-c-prop-q.gif" width="50%" height="50%">
 
-### Water at rest with dry zones
+### Wet/dry c-property
 
-<img src="https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/wet_dry_c_property.gif" width="50%" height="50%">
+<img src="HFV1_cpp/wet-dry-c-prop-q.gif" width="50%" height="50%">
 
-### Dam break with water overtopping a building
+### Building overtopping
 
-<img src="https://github.com/al0vya/FV1_GPU/blob/master/FV1_GPU_1D/test_case_gifs/building_overtopping.gif" width="50%" height="50%">
+<img src="HFV1_cpp/building-overtopping-eta.gif" width="50%" height="50%">
