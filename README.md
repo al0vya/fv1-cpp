@@ -1,5 +1,9 @@
 # FV1_cpp
 
+## About
+
+This project is a model that can simulate one-dimensional shallow water flow by numerically solving the [shallow water equations](https://en.wikipedia.org/wiki/Shallow_water_equations).
+
 To use this model you need to have [Visual Studio 2019](https://visualstudio.microsoft.com/downloads/) or higher. You also need to have [Python](https://www.python.org/downloads/).
 
 ## Building the model executable
