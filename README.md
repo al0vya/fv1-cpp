@@ -16,24 +16,24 @@ The model supports 7 in-built tests. The outputs from each test are shown in the
 
 ### Wet dam break
 
-<img src="FV1_cpp/wet-dam-break-eta.gif" width="50%" height="50%">
+<img src="FV1_cpp/FV1_cpp/wet-dam-break-eta.gif" width="50%" height="50%">
 
 ### Dry dam break
 
-<img src="FV1_cpp/dry-dam-break-eta.gif" width="50%" height="50%">
+<img src="FV1_cpp/FV1_cpp/dry-dam-break-eta.gif" width="50%" height="50%">
 
 ### Dry dam break with friction
 
-<img src="FV1_cpp/dry-dam-break-fric-eta.gif" width="50%" height="50%">
+<img src="FV1_cpp/FV1_cpp/dry-dam-break-fric-eta.gif" width="50%" height="50%">
 
 ### Wet c-property
 
-<img src="FV1_cpp/wet-c-prop-q.gif" width="50%" height="50%">
+<img src="FV1_cpp/FV1_cpp/wet-c-prop-q.gif" width="50%" height="50%">
 
 ### Wet/dry c-property
 
-<img src="FV1_cpp/wet-dry-c-prop-q.gif" width="50%" height="50%">
+<img src="FV1_cpp/FV1_cpp/wet-dry-c-prop-q.gif" width="50%" height="50%">
 
 ### Building overtopping
 
-<img src="FV1_cpp/building-overtopping-eta.gif" width="50%" height="50%">
+<img src="FV1_cpp/FV1_cpp/building-overtopping-eta.gif" width="50%" height="50%">
