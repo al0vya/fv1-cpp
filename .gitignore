@@ -311,7 +311,7 @@ paket-files/
 
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
-*.pyc
+c
 
 # Cake - Uncomment if you are using it
 # tools/**
@@ -359,7 +359,27 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-*.txt
 *.png
 *.csv
+*.dem*
+*.start
+*.Vx
+*.Vy
+*.wd*
+*.xml
+*.elev
+*.stage
+*.velocity
+*.bdy
+*.bci
+*.vtk
+*.zip
+*.svg
 *.jpg
+*.jpeg
+*.q*
+*.dat
+*.db*
+out/build/x64-Debug/
+out/build/x64-Release/
+build
