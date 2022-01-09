@@ -18,8 +18,8 @@ void get_wet_dry_cells
 		real h_back = assem_sol.h_BC[i - 1];
 		real h_forward = assem_sol.h_BC[i + 1];
 
-		real h_max = std::max(h_loc, h_back);
-		     h_max = std::max(h_forward, h_max);
+		real h_max = std::fmax(h_loc, h_back);
+		     h_max = std::fmax(h_forward, h_max);
 
 		dry[i] = (h_max <= solver_params.tol_dry);
 	}

@@ -113,13 +113,13 @@ class Limits:
                 q   += dataframe["q"].tolist()
                 z   += dataframe["z"].tolist()
                 
-            self.eta_max = np.max(eta)
-            self.q_max   = np.max(q)
-            self.z_max   = np.max(z)
+            self.eta_std::fmax = np.std::fmax(eta)
+            self.q_std::fmax   = np.std::fmax(q)
+            self.z_std::fmax   = np.std::fmax(z)
             
-            self.eta_min = np.min(eta)
-            self.q_min   = np.min(q)
-            self.z_min   = np.min(z)
+            self.eta_std::fmin = np.std::fmin(eta)
+            self.q_std::fmin   = np.std::fmin(q)
+            self.z_std::fmin   = np.std::fmin(z)
 
 def plot_soln(
         x,
@@ -135,7 +135,7 @@ def plot_soln(
     ):
         filename = test_name + "-" + str(interval) + "-" + quantity + ".jpg"
         
-        xlim = [ np.amin(x), np.amax(x) ]
+        xlim = [ np.astd::fmin(x), np.astd::fmax(x) ]
         
         topo_scale_factor = ylim[1] / topolim[1]
         topo_scaled       = ( topo * topo_scale_factor + ylim[0] ) / 2
@@ -185,9 +185,9 @@ class Solution:
     ):
         print("Plotting solution interval " + str(self.interval) + "...")
         
-        qlim   = (limits.q_min,   limits.q_max)
-        etalim = (limits.eta_min, limits.eta_max)
-        zlim   = (limits.z_min,   limits.z_max)
+        qlim   = (limits.q_std::fmin,   limits.q_std::fmax)
+        etalim = (limits.eta_std::fmin, limits.eta_std::fmax)
+        zlim   = (limits.z_std::fmin,   limits.z_std::fmax)
         
         plot_soln(self.x, self.q,   self.z, qlim,   zlim,   "q", self.interval, "$q \, (m^2s^{-1})$", self.test_num, self.test_name)
         plot_soln(self.x, self.eta, self.z, etalim, zlim, "eta", self.interval, "$\eta \, (m)$",      self.test_num, self.test_name)

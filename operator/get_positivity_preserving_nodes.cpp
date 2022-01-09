@@ -18,15 +18,15 @@ void get_positivity_preserving_nodes
 		real z_west = face_vals.eta_west[i] - face_vals.h_west[i];
 		real z_east = face_vals.eta_east[i] - face_vals.h_east[i];
 
-		real z_star_intermediate = std::max(z_west, z_east);
+		real z_star_intermediate = std::fmax(z_west, z_east);
 
-		delta_west[i] = std::max(C(0.0), -(face_vals.eta_west[i] - z_star_intermediate));
-		delta_east[i] = std::max(C(0.0), -(face_vals.eta_east[i] - z_star_intermediate));
+		delta_west[i] = std::fmax(C(0.0), -(face_vals.eta_west[i] - z_star_intermediate));
+		delta_east[i] = std::fmax(C(0.0), -(face_vals.eta_east[i] - z_star_intermediate));
 
-		star_vals.h_west[i] = std::max(C(0.0), face_vals.eta_west[i] - z_star_intermediate);
+		star_vals.h_west[i] = std::fmax(C(0.0), face_vals.eta_west[i] - z_star_intermediate);
 		star_vals.q_west[i] = u_west * star_vals.h_west[i];
 
-		star_vals.h_east[i] = std::max(C(0.0), face_vals.eta_east[i] - z_star_intermediate);
+		star_vals.h_east[i] = std::fmax(C(0.0), face_vals.eta_east[i] - z_star_intermediate);
 		star_vals.q_east[i] = u_east * star_vals.h_east[i];
 
 		star_vals.z_west[i] = z_star_intermediate - delta_west[i];

@@ -21,8 +21,8 @@ void write_solution_to_file
 		test << (nodal_vals.x[i] + nodal_vals.x[i + 1]) / 2 << "," 
 			 << assem_sol.q_BC[i + 1] << "," 
 			 << assem_sol.z_BC[i + 1] << "," 
-			 << std::max(assem_sol.z_BC[i + 1], assem_sol.h_BC[i + 1] + assem_sol.z_BC[i + 1]) 
-			 << std::endl;
+			 << std::fmax(assem_sol.z_BC[i + 1], assem_sol.h_BC[i + 1] + assem_sol.z_BC[i + 1]) 
+			 << "\n";
 	}
 
 	test.close();

@@ -18,7 +18,7 @@ void fv1_operator
 		if (!dry[i])
 		{
 			real mass_increment = -(1 / dx) * (fluxes.mass[i] - fluxes.mass[i - 1]);
-			real momentum_increment = -(1 / dx) * (fluxes.momentum[i] - fluxes.momentum[i - 1] + 2 * sqrt(C(3.0)) * solver_params.g * bar_vals.h[i - 1] * bar_vals.z[i - 1]);
+			real momentum_increment = -(1 / dx) * (fluxes.momentum[i] - fluxes.momentum[i - 1] + 2 * std::sqrt(C(3.0)) * solver_params.g * bar_vals.h[i - 1] * bar_vals.z[i - 1]);
 
 			assem_sol.h_BC[i] += dt * mass_increment;
 			assem_sol.q_BC[i] = (assem_sol.h_BC[i] <= solver_params.tol_dry) ? 0 : assem_sol.q_BC[i] + dt * momentum_increment;

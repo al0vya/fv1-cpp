@@ -13,6 +13,6 @@ void get_bar_values
 		bar_vals.h[i] = (star_vals.h_west[i + 1] + star_vals.h_east[i]) / 2;
 
 		// 1st order projection
-		bar_vals.z[i] = (star_vals.z_west[i + 1] - star_vals.z_east[i]) / (2 * sqrt(C(3.0)));
+		bar_vals.z[i] = (star_vals.z_west[i + 1] - star_vals.z_east[i]) / (2 * std::sqrt(C(3.0)));
 	}
 }

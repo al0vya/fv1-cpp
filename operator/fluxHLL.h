@@ -1,8 +1,6 @@
 #pragma once
-#include <cmath>
-#include <algorithm>
 
-using namespace std;
+#include <cmath>
 
 #include "real.h"
 #include "SimulationParameters.h"
