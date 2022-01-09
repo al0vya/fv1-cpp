@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../classes/AssembledSolution.h"
-#include "../classes/BoundaryConditions.h"
-#include "../classes/SimulationParameters.h"
+#include "AssembledSolution.h"
+#include "BoundaryConditions.h"
+#include "SimulationParameters.h"
 
 void add_ghost_cells
 (

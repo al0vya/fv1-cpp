@@ -1,25 +1,25 @@
-// File input/output
-#include "output/write_solution_to_file.h"
+// File output
+#include "write_solution_to_file.h"
 
 // Solver steps
-#include "operator/get_nodal_values.h"
-#include "operator/get_modal_values.h"
-#include "operator/add_ghost_cells.h"
-#include "operator/friction_update.h"
-#include "operator/get_wet_dry_cells.h"
-#include "operator/get_face_values.h"
-#include "operator/get_positivity_preserving_nodes.h"
-#include "operator/fluxHLL.h"
-#include "operator/get_bar_values.h"
-#include "operator/fv1_operator.h"
-#include "operator/get_dt_CFL.h"
+#include "get_nodal_values.h"
+#include "get_modal_values.h"
+#include "add_ghost_cells.h"
+#include "friction_update.h"
+#include "get_wet_dry_cells.h"
+#include "get_face_values.h"
+#include "get_positivity_preserving_nodes.h"
+#include "fluxHLL.h"
+#include "get_bar_values.h"
+#include "fv1_operator.h"
+#include "get_dt_CFL.h"
 
 // Solver/simulation setters
-#include "input/set_simulation_parameters.h"
-#include "input/set_solver_parameters.h"
-#include "input/set_boundary_conditions.h"
+#include "set_simulation_parameters.h"
+#include "set_solver_parameters.h"
+#include "set_boundary_conditions.h"
 
-#include "classes/SaveInterval.h"
+#include "SaveInterval.h"
 
 int main
 (

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../classes/AssembledSolution.h"
-#include "../classes/SimulationParameters.h"
-#include "../classes/FaceValues.h"
+#include "AssembledSolution.h"
+#include "SimulationParameters.h"
+#include "FaceValues.h"
 
 void get_face_values
 (

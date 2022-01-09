@@ -1,5 +1,5 @@
 #include "set_boundary_conditions.h"
-#include "../classes/real.h"
+#include "real.h"
 
 BoundaryConditions set_boundary_conditions(int test_case_selection)
 {

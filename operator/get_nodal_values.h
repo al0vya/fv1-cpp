@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../classes/SimulationParameters.h"
-#include "../classes/NodalValues.h"
-#include "../classes/BoundaryConditions.h"
+#include "SimulationParameters.h"
+#include "NodalValues.h"
+#include "BoundaryConditions.h"
 #include "h_init_c_property.h"
 #include "h_init_overtop.h"
 #include "bed_data_c_property.h"

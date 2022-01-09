@@ -4,10 +4,10 @@
 #include <iostream>
 #include <string>
 
-#include "../classes/SimulationParameters.h"
-#include "../classes/AssembledSolution.h"
-#include "../classes/NodalValues.h"
-#include "../classes/SaveInterval.h"
+#include "SimulationParameters.h"
+#include "AssembledSolution.h"
+#include "NodalValues.h"
+#include "SaveInterval.h"
 
 void write_solution_to_file
 (

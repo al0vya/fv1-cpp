@@ -13,9 +13,9 @@ def EXIT_HELP():
     help_message = (
         "Use as:\n\n" +
         "    python test.py test <MODE> <NUM_CELLS>\n\n" +
-        "        MODE     : [debug,release]\n\n"
+        "        MODE     : [debug,release,linux]\n\n"
         "    python test.py run <MODE> <TEST_CASE> <NUM_CELLS> <SAVE_INT>\n\n" +
-        "        MODE      : [debug,release]\n" +
+        "        MODE      : [debug,release,linux]\n" +
         "        TEST_CASE : [1,2,3,4,5,6]\n" +
         "        SAVE_INT  : interval in seconds that the solution data are saved\n\n"
         "    Available test cases:\n" +
@@ -64,6 +64,8 @@ def set_path(mode):
         path = os.path.join(os.path.dirname(__file__), "out", "build", "x64-Debug")
     elif mode == "release":
         path = os.path.join(os.path.dirname(__file__), "out", "build", "x64-Release")
+    elif mode == "linux":
+        path = os.path.join(os.path.dirname(__file__), "build")
     else:
         EXIT_HELP()
         

@@ -2,11 +2,11 @@
 
 #include <algorithm>
 
-#include "../classes/SimulationParameters.h"
-#include "../classes/SolverParameters.h"
-#include "../classes/Fluxes.h"
-#include "../classes/AssembledSolution.h"
-#include "../classes/BarValues.h"
+#include "SimulationParameters.h"
+#include "SolverParameters.h"
+#include "Fluxes.h"
+#include "AssembledSolution.h"
+#include "BarValues.h"
 
 void fv1_operator
 (

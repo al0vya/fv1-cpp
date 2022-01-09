@@ -1,5 +1,5 @@
 #pragma once
-#include "../classes/real.h"
+#include "real.h"
 
 typedef struct BoundaryConditions
 {

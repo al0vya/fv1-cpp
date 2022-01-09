@@ -2,9 +2,9 @@
 
 #include <algorithm>
 
-#include "../classes/AssembledSolution.h"
-#include "../classes/SimulationParameters.h"
-#include "../classes/SolverParameters.h"
+#include "AssembledSolution.h"
+#include "SimulationParameters.h"
+#include "SolverParameters.h"
 
 void get_dt_CFL
 (
