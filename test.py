@@ -47,7 +47,7 @@ def natural_keys(text):
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 def get_filenames_natural_order():
-    path = os.path.dirname(__file__)
+    path = os.path.dirname( os.path.abspath(__file__) )
     
     filenames_natural_order = os.listdir(path)
     
@@ -61,18 +61,18 @@ def get_filenames_natural_order():
 
 def set_path(mode):
     if mode == "debug":
-        path = os.path.join(os.path.dirname(__file__), "out", "build", "x64-Debug")
+        path = os.path.join(os.path.dirname( os.path.abspath(__file__) ), "out", "build", "x64-Debug")
     elif mode == "release":
-        path = os.path.join(os.path.dirname(__file__), "out", "build", "x64-Release")
+        path = os.path.join(os.path.dirname( os.path.abspath(__file__) ), "out", "build", "x64-Release")
     elif mode == "linux":
-        path = os.path.join(os.path.dirname(__file__), "build")
+        path = os.path.join(os.path.dirname( os.path.abspath(__file__) ), "build")
     else:
         EXIT_HELP()
         
     return path
 
 def clear_jpg_files():
-    path = os.path.dirname(__file__)
+    path = os.path.dirname( os.path.abspath(__file__) )
     
     [ os.remove(filename) for filename in os.listdir(path) if filename.endswith(".jpg") ]
 
@@ -113,13 +113,13 @@ class Limits:
                 q   += dataframe["q"].tolist()
                 z   += dataframe["z"].tolist()
                 
-            self.eta_std::fmax = np.std::fmax(eta)
-            self.q_std::fmax   = np.std::fmax(q)
-            self.z_std::fmax   = np.std::fmax(z)
+            self.etamax = np.max(eta)
+            self.qmax   = np.max(q)
+            self.zmax   = np.max(z)
             
-            self.eta_std::fmin = np.std::fmin(eta)
-            self.q_std::fmin   = np.std::fmin(q)
-            self.z_std::fmin   = np.std::fmin(z)
+            self.etamin = np.min(eta)
+            self.qmin   = np.min(q)
+            self.zmin   = np.min(z)
 
 def plot_soln(
         x,
@@ -135,7 +135,7 @@ def plot_soln(
     ):
         filename = test_name + "-" + str(interval) + "-" + quantity + ".jpg"
         
-        xlim = [ np.astd::fmin(x), np.astd::fmax(x) ]
+        xlim = [ np.amin(x), np.amax(x) ]
         
         topo_scale_factor = ylim[1] / topolim[1]
         topo_scaled       = ( topo * topo_scale_factor + ylim[0] ) / 2
@@ -163,7 +163,7 @@ class Solution:
     ):
         print("Initialising solution...")
         
-        if mode != "debug" and mode != "release":
+        if mode != "debug" and mode != "release" and mode != "linux":
             EXIT_HELP()
         
         self.interval  = interval
@@ -185,9 +185,9 @@ class Solution:
     ):
         print("Plotting solution interval " + str(self.interval) + "...")
         
-        qlim   = (limits.q_std::fmin,   limits.q_std::fmax)
-        etalim = (limits.eta_std::fmin, limits.eta_std::fmax)
-        zlim   = (limits.z_std::fmin,   limits.z_std::fmax)
+        qlim   = (limits.qmin,   limits.qmax)
+        etalim = (limits.etamin, limits.etamax)
+        zlim   = (limits.zmin,   limits.zmax)
         
         plot_soln(self.x, self.q,   self.z, qlim,   zlim,   "q", self.interval, "$q \, (m^2s^{-1})$", self.test_num, self.test_name)
         plot_soln(self.x, self.eta, self.z, etalim, zlim, "eta", self.interval, "$\eta \, (m)$",      self.test_num, self.test_name)
@@ -223,10 +223,8 @@ def run():
         
         print("Trying to find executable in " + path)
         
-        if   mode == "debug":
-            solver_file = os.path.join(path, "fv1-cpp.exe")
-        elif mode == "release":
-            solver_file = os.path.join(path, "fv1-cpp.exe")
+        if mode == "debug" or mode == "release" or mode == "linux":
+            solver_file = os.path.join(path, "fv1-cpp" if mode == "linux" else "fv1-cpp.exe")
         else:
             EXIT_HELP()
         
@@ -248,10 +246,8 @@ def run_tests():
         
         print("Trying to find executable in " + path)
         
-        if   mode == "debug":
-            solver_file = os.path.join(path, "fv1-cpp.exe")
-        elif mode == "release":
-            solver_file = os.path.join(path, "fv1-cpp.exe")
+        if mode == "debug" or mode == "release" or mode == "linux":
+            solver_file = os.path.join(path, "fv1-cpp" if mode == "linux" else "fv1-cpp.exe")
         else:
             EXIT_HELP()
         
