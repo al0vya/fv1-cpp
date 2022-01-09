@@ -13,7 +13,7 @@ def EXIT_HELP():
     help_message = (
         "Use as:\n\n" +
         "    python test.py test <MODE> <NUM_CELLS>\n\n" +
-        "        MODE     : [debug,release,linux]\n\n"
+        "        MODE : [debug,release,linux]\n\n"
         "    python test.py run <MODE> <TEST_CASE> <NUM_CELLS> <SAVE_INT>\n\n" +
         "        MODE      : [debug,release,linux]\n" +
         "        TEST_CASE : [1,2,3,4,5,6]\n" +
@@ -75,6 +75,11 @@ def clear_jpg_files():
     path = os.path.dirname( os.path.abspath(__file__) )
     
     [ os.remove(filename) for filename in os.listdir(path) if filename.endswith(".jpg") ]
+
+def clear_csv_files():
+    path = os.path.dirname( os.path.abspath(__file__) )
+    
+    [ os.remove(filename) for filename in os.listdir(path) if filename.endswith(".csv") ]
 
 test_names = [
     "wet-dam-break",
@@ -278,6 +283,8 @@ if len(sys.argv) > 1:
     if action == "run":
         run()
         animate()
+        clear_jpg_files()
+        clear_csv_files()
     elif action == "test":
         run_tests()
     else:
